@@ -1,0 +1,13 @@
+<?php
+
+namespace {{ namespace }};
+
+class {{ class }}
+{
+    /**
+     * Example method
+     */
+    public function example(): void {
+        // example function
+    }
+}
