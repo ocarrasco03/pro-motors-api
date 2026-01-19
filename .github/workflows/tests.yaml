@@ -56,5 +56,5 @@ jobs:
         run: php artisan test --testsuite=Unit --coverage
 
       - name: Run Tests with Coverage
-        run: php artisan test Feature --coverage --min=80
+        run: php artisan test --testsuite=Feature --coverage --min=80
 
