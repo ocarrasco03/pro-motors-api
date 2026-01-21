@@ -29,19 +29,21 @@ class TokenServiceImpl implements TokenService
         ];
     }
 
-    public function revokeToken(User $user): void
+    public function revokeToken(User $user): bool
     {
         /** @var PersonalAccessToken|null $token */
         $token = $user->currentAccessToken();
 
         if ($token instanceof PersonalAccessToken) {
-            $token->delete();
+            return $token->delete();
         }
+
+        return false;
     }
 
-    public function revokeAllTokens(User $user): void
+    public function revokeAllTokens(User $user): bool
     {
-        $user->tokens()->delete();
+        return $user->tokens()->delete();
     }
 
     public function verifyToken(Request $request): bool

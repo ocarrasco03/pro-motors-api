@@ -15,15 +15,15 @@ interface TokenService
 
     /**
      * @param User $user
-     * @return void
+     * @return bool
      */
-    public function revokeToken(User $user): void;
+    public function revokeToken(User $user): bool;
 
     /**
      * @param User $user
-     * @return void
+     * @return bool
      */
-    public function revokeAllTokens(User $user): void;
+    public function revokeAllTokens(User $user): bool;
 
     /**
      * @param Request $request

@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Core\Traits\Blamable;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -34,6 +35,10 @@ class User extends Authenticatable
         'company_id'
     ];
 
+    protected $appends = [
+        'all_permissions',
+    ];
+
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -58,6 +63,14 @@ class User extends Authenticatable
             'last_login_at' => 'datetime',
         ];
     }
+
+    public function getAllPermissionsAttribute(): Collection
+    {
+        return $this->getAllPermissions()
+            ->unique('id')
+            ->values();
+    }
+
 
     public function company(): BelongsTo
     {

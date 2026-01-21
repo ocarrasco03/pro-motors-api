@@ -32,9 +32,14 @@ trait ApiResponse
     public function error(mixed $message = 'Something fails', int $code = 400, mixed $data = null): JsonResponse {
         Log::error($message, [$data]);
 
-        return response()->json([
+        if (is_null($data)) {
+            $response = [];
+        } else {
+            $response = ['data' => $data];
+        }
+
+        return response()->json(array_merge([
             'message' => $message,
-            'data' => $data,
-        ], $code);
+        ], $response), $code);
     }
 }

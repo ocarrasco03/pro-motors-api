@@ -2,11 +2,13 @@
 
 namespace App\Core\Auth;
 
+use App\Core\Enums\StatusEnum;
 use App\Core\Traits\ApiResponse;
-use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Resources\Settings\UserProfileResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -16,17 +18,19 @@ class AuthServiceImpl implements AuthService
 
     public function __construct(protected TokenServiceImpl $tokenService) {}
 
-    public function login(LoginRequest $request): JsonResponse
+    public function login(array $data): array
     {
-        $request->validated();
+        $user = User::where('username', $data['username'])->first();
 
-        $credentials = $request->only('username', 'password');
-
-        $user = User::where('username', $credentials['username'])->first();
-
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+        if (!$user || !Hash::check($data['password'], $user->password) || !$user->active) {
             throw ValidationException::withMessages([
                 'login' => ['The provided credentials are incorrect.'],
+            ]);
+        }
+
+        if ($user->company && $user->company->status !== StatusEnum::ACTIVE) {
+            throw ValidationException::withMessages([
+                'login' => ['The company is not active.'],
             ]);
         }
 
@@ -37,23 +41,18 @@ class AuthServiceImpl implements AuthService
             $user->tokens()->oldest()->first()->delete();
         }
 
-        return $this->success($this->tokenService->generateToken($user));
+        return $this->tokenService->generateToken($user);
     }
 
-    public function logout(Request $request): JsonResponse
+    public function logout(User $user): bool
     {
-        $this->tokenService->revokeToken($request->user());
-        return $this->success(null, 'You have been logged out.');
+        return $this->tokenService->revokeToken($user);
     }
 
-    public function refresh(Request $request): JsonResponse
+    public function refresh(User $user): array
     {
-        $this->tokenService->revokeToken($request->user());
-
-        return $this->success(
-            $this->tokenService->generateToken($request->user()),
-            'Token successfully refreshed.'
-        );
+        $this->tokenService->revokeToken($user);
+        return $this->tokenService->generateToken($user);
     }
 
     public function register(Request $request): JsonResponse
@@ -70,10 +69,12 @@ class AuthServiceImpl implements AuthService
         );
     }
 
-    public function me(Request $request): JsonResponse
+    public function me(User $user): UserProfileResource
     {
-        $user = $request->user();
-
-        return $this->success($user);
+        return new UserProfileResource($user->load([
+            'company:id,name,slug',
+            'roles:id,name'
+        ])
+            ->loadMissing('permissions'));
     }
 }

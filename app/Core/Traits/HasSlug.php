@@ -5,6 +5,7 @@ namespace App\Core\Traits;
 use App\Core\Traits\Slug\HasTranslatableSlug;
 use App\Core\Traits\Slug\SlugOptions;
 use App\Exceptions\InvalidOption;
+use Illuminate\Database\Eloquent\Builder;
 use RuntimeException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -222,21 +223,38 @@ trait HasSlug
         return substr($slugSourceString, 0, $this->slugOptions->maximumLength);
     }
 
-    public static function findBySlug(string $slug, array $columns = ['*'], ?callable $additionalQuery = null)
-    {
+    /**
+     * Resolve a model by slug using an existing query builder.
+     *
+     * This method is intentionally builder-aware so it can be combined with
+     * select(), with(), scopes, and any other query customizations before
+     * execution.
+     */
+    public static function findBySlug(
+        string $slug,
+        array $columns = ['*'],
+        ?callable $additionalQuery = null
+    ) {
         $modelInstance = new static();
         $field = $modelInstance->getSlugOptions()->slugField;
 
+        // IMPORTANT:
+        // Use the current query context instead of creating a new one,
+        // allowing chaining like:
+        // Company::select(...)->with(...)->findBySlug($slug)
         $query = static::query();
 
-        if (in_array(HasTranslatableSlug::class, class_uses_recursive(static::class))) {
+        if (in_array(HasTranslatableSlug::class, class_uses_recursive(static::class), true)) {
             $currentLocale = $modelInstance->getLocale();
             $fallbackLocale = config('app.fallback_locale');
 
             $currentField = "{$field}->{$currentLocale}";
             $fallbackField = "{$field}->{$fallbackLocale}";
 
-            $query->where(fn ($query) => $query->where($currentField, $slug)->orWhere($fallbackField, $slug));
+            $query->where(function ($q) use ($currentField, $fallbackField, $slug) {
+                $q->where($currentField, $slug)
+                  ->orWhere($fallbackField, $slug);
+            });
         } else {
             $query->where($field, $slug);
         }
@@ -246,5 +264,11 @@ trait HasSlug
         }
 
         return $query->first($columns);
+    }
+
+    public static function scopeGetBySlug(Builder $query, string $slug): Builder
+    {
+        $modelInstance = new static();
+        return $query->where($modelInstance->getSlugOptions()->slugField, $slug);
     }
 }

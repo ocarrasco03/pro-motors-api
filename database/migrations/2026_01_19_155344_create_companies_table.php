@@ -38,6 +38,7 @@ return new class extends Migration
             $table->enum('license', ['individual', 'corporate'])->default('corporate')->index();
             $table->enum('status', ['active', 'inactive', 'suspended'])->default('active')->index();
             $table->enum('billing_period', ['monthly', 'bimonthly', 'quarterly', 'annual', 'biannual'])->default('monthly')->index();
+            $table->boolean('is_protected')->default(false);
             $table->string('created_by')->nullable();
             $table->string('updated_by')->nullable();
             $table->timestamps();
