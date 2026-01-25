@@ -21,7 +21,7 @@ class CheckTokenExpiration
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if ($this->tokenService->verifyToken($request)) {
+        if (!$this->tokenService->verifyToken($request)) {
             throw new AuthenticationException();
         }
 
