@@ -6,9 +6,6 @@ use App\Core\Enums\StatusEnum;
 use App\Core\Traits\ApiResponse;
 use App\Http\Resources\Settings\UserProfileResource;
 use App\Models\User;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
@@ -22,7 +19,7 @@ class AuthServiceImpl implements AuthService
     {
         $user = User::where('username', $data['username'])->first();
 
-        if (!$user || !Hash::check($data['password'], $user->password) || !$user->active) {
+        if (! $user || ! Hash::check($data['password'], $user->password) || ! $user->active) {
             throw ValidationException::withMessages([
                 'login' => ['The provided credentials are incorrect.'],
             ]);
@@ -52,28 +49,15 @@ class AuthServiceImpl implements AuthService
     public function refresh(User $user): array
     {
         $this->tokenService->revokeToken($user);
+
         return $this->tokenService->generateToken($user);
-    }
-
-    public function register(Request $request): JsonResponse
-    {
-        $user = User::create([
-            'name' => $request->input('name'),
-            'email' => $request->input('email'),
-            'password' => Hash::make($request->input('password')),
-        ]);
-
-        return $this->success(
-            $this->tokenService->generateToken($user),
-            'User registered successfully.'
-        );
     }
 
     public function me(User $user): UserProfileResource
     {
         return new UserProfileResource($user->load([
             'company:id,name,slug',
-            'roles:id,name'
+            'roles:id,name',
         ])
             ->loadMissing('permissions'));
     }

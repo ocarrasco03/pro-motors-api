@@ -3,19 +3,22 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Core\Enums\RolesEnum;
 use App\Core\Traits\Blamable;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Laravel\Scout\Searchable;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens, Blamable, HasRoles;
+    use Blamable, HasApiTokens, HasFactory, HasRoles, Notifiable, Searchable;
 
     /**
      * The attributes that are mass assignable.
@@ -32,11 +35,12 @@ class User extends Authenticatable
         'created_by',
         'updated_by',
         'last_login_at',
-        'company_id'
+        'company_id',
     ];
 
     protected $appends = [
         'all_permissions',
+        'full_name',
     ];
 
     /**
@@ -64,6 +68,11 @@ class User extends Authenticatable
         ];
     }
 
+    public function getFullNameAttribute(): string
+    {
+        return "{$this->first_name} {$this->last_name}";
+    }
+
     public function getAllPermissionsAttribute(): Collection
     {
         return $this->getAllPermissions()
@@ -71,9 +80,34 @@ class User extends Authenticatable
             ->values();
     }
 
-
     public function company(): BelongsTo
     {
         return $this->belongsTo(Company::class);
+    }
+
+    public function scopeVisibleFor(Builder $query, User $user): Builder
+    {
+        if (is_null($user->company_id) && $user->hasRole(RolesEnum::SUPER_ADMIN->value)) {
+            return $query;
+        }
+
+        if (! is_null($user->company_id)) {
+            return $query->where('company_id', $user->company_id);
+        }
+
+        return $query->whereRaw('1 = 0');
+    }
+
+    public function toSearchableArray(): array
+    {
+        return [
+            'id' => $this->id,
+            'company_id' => $this->company_id,
+            'first_name' => $this->first_name,
+            'last_name' => $this->last_name,
+            'email' => $this->email,
+            'username' => $this->username,
+            'active' => $this->active,
+        ];
     }
 }

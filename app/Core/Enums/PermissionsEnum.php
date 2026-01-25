@@ -2,69 +2,73 @@
 
 namespace App\Core\Enums;
 
-enum PermissionsEnum:string
+enum PermissionsEnum: string
 {
     // Company management permissions
-    case MANAGE_COMPANIES = "companies.list";
-    case CREATE_COMPANY = "companies.create";
-    case VIEW_COMPANY = "companies.view";
-    case EDIT_COMPANY = "companies.edit";
-    case DELETE_COMPANY = "companies.delete";
-    case RESTORE_COMPANY = "companies.restore";
-    case FORCE_DELETE_COMPANY = "companies.forceDelete";
+    case MANAGE_COMPANIES = 'companies.list';
+    case CREATE_COMPANY = 'companies.create';
+    case VIEW_COMPANY = 'companies.view';
+    case EDIT_COMPANY = 'companies.edit';
+    case DELETE_COMPANY = 'companies.delete';
+    case RESTORE_COMPANY = 'companies.restore';
+    case FORCE_DELETE_COMPANY = 'companies.forceDelete';
+
+    // Company Group management permissions
+    case MANAGE_GROUPS = 'company.groups.manage';
+    case LIST_GROUPS = 'company.groups.list';
+    case CREATE_GROUPS = 'company.groups.create';
+    case VIEW_GROUPS = 'company.groups.view';
+    case EDIT_GROUPS = 'company.groups.edit';
+    case DELETE_GROUPS = 'company.groups.delete';
 
     // Price list management permissions
-    case CREATE_PRICE_LIST = 'create price list';
-    case VIEW_PRICE_LIST = 'view price list';
-    case EDIT_PRICE_LIST = 'edit price list';
-    case DELETE_PRICE_LIST = 'delete price list';
-
-    // Group management permissions
-    case MANAGE_GROUPS = "manage groups";
-    case CREATE_GROUPS = "create group";
-    case VIEW_GROUPS = 'view group';
-    case EDIT_GROUPS = 'edit group';
-    case DELETE_GROUPS = 'delete group';
+    case MANAGE_PRICE_LISTS = 'company.price.lists.manage';
+    case CREATE_PRICE_LIST = 'company.price.lists.list';
+    case VIEW_PRICE_LIST = 'company.price.lists.view';
+    case EDIT_PRICE_LIST = 'company.price.lists.edit';
+    case DELETE_PRICE_LIST = 'company.price.lists.delete';
 
     // Supplier management permissions
-    case MANAGE_SUPPLIERS = 'manage suppliers';
-    case CREATE_SUPPLIER = 'create supplier';
-    case VIEW_SUPPLIER = 'view supplier';
-    case EDIT_SUPPLIER = 'edit supplier';
-    case DELETE_SUPPLIER = 'delete supplier';
+    case MANAGE_PROVIDER = 'providers.list';
+    case CREATE_PROVIDER = 'providers.create';
+    case VIEW_PROVIDER = 'providers.view';
+    case EDIT_PROVIDER = 'providers.edit';
+    case DELETE_PROVIDER = 'providers.delete';
 
     // Product management permissions
-    case MANAGE_PRODUCTS = 'manage products';
-    case CREATE_PRODUCT = 'create product';
-    case VIEW_PRODUCT = 'view product';
-    case EDIT_PRODUCT = 'edit product';
-    case VIEW_IMPORTS = 'view imports';
-    case PROCESS_IMPORTS = 'process imports';
-    case DELETE_IMPORTS = 'delete imports';
-    case DELETE_PRODUCT = 'delete product';
-    case IMPORT_PRODUCTS = 'import products';
-    case EXPORT_PRODUCTS = 'export products';
+    case MANAGE_PRODUCTS = 'products.manage';
+    case LIST_PRODUCTS = 'products.list';
+    case CREATE_PRODUCT = 'products.create';
+    case VIEW_PRODUCT = 'products.view';
+    case EDIT_PRODUCT = 'products.edit';
+    case DELETE_PRODUCT = 'products.delete';
+    case FORCE_DELETE_PRODUCT = 'products.forceDelete';
+    case LIST_IMPORTS = 'imports.list';
+    case VIEW_IMPORTS = 'imports.view';
+    case PROCESS_IMPORTS = 'imports.process';
+    case DELETE_IMPORTS = 'imports.delete';
+    case IMPORT_PRODUCTS = 'imports.products';
+    case MANAGE_EXPORTS = 'exports.list';
+    case EXPORT_PRODUCTS = 'exports.products';
 
     // User management permissions
-    case MANAGE_USERS = 'manage users';
-    case CREATE_USER = 'create user';
-    case VIEW_USER = 'view user';
-    case EDIT_USER = 'edit user';
-    case DELETE_USER = 'delete user';
-    case CHANGE_USER_PASSWORD = 'change user password';
-
-    // Profile permissions
-    case VIEW_PROFILE = 'view profile';
-    case EDIT_PROFILE = 'edit profile';
-    case CHANGE_PROFILE_PASSWORD = 'change profile password';
+    case MANAGE_USERS = 'users.manage';
+    case LIST_USERS = 'users.list';
+    case CREATE_USER = 'users.create';
+    case VIEW_USER = 'users.view';
+    case EDIT_USER = 'users.edit';
+    case DELETE_USER = 'users.delete';
+    case RESTORE_USER = 'users.restore';
+    case CHANGE_USER_PASSWORD = 'users.changePassword';
+    case FORCE_DELETE_USER = 'users.forceDelete';
 
     // Role and permission management
-    case MANAGE_ROLES = 'manage roles';
-    case ASSIGN_ROLES = 'assign roles';
-    case VIEW_ROLES = 'view roles';
-    case DELETE_ROLES = 'delete roles';
-    case MANAGE_PERMISSIONS = 'manage permissions';
-    case ASSIGN_PERMISSIONS = 'assign permissions';
-    case VIEW_PERMISSIONS = 'view permissions';
-    case DELETE_PERMISSIONS = 'delete permissions';
+    case MANAGE_ROLES = 'roles.manage';
+    case LIST_ROLES = 'roles.list';
+    case ASSIGN_ROLES = 'roles.assign';
+    case VIEW_ROLES = 'roles.view';
+    case MANAGE_PERMISSIONS = 'permissions.manage';
+    case LIST_PERMISSIONS = 'permissions.list';
+    case ASSIGN_PERMISSIONS = 'permissions.assign';
+    case VIEW_PERMISSIONS = 'permissions.view';
 }
