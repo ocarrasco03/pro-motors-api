@@ -2,6 +2,7 @@
 
 namespace App\Core\Settings;
 
+use App\Http\Requests\Common\SearchRequest;
 use App\Http\Resources\Settings\UserCollection;
 use App\Models\User;
 use Illuminate\Support\Collection;
@@ -18,7 +19,7 @@ interface UserService
     /**
      * Retrieve all users.
      */
-    public function getUsers(): UserCollection;
+    public function getUsers(array $data): UserCollection;
 
     /**
      * Retrieve a single user by ID.

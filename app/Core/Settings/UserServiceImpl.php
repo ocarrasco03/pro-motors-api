@@ -28,14 +28,14 @@ class UserServiceImpl implements UserService
     /**
      * Retrieve all users.
      */
-    public function getUsers(): UserCollection
+    public function getUsers(array $data): UserCollection
     {
-        $perPage = 10;
-        $sortBy = 'id';
-        $orderBy = 'asc';
-        $filterBy = 'id';
-        $page = 1;
-        $search = null;
+        $perPage = $data['perPage'] ?? 10;
+        $sortBy = $data['sortBy'] ?? 'id';
+        $orderBy = $data['orderBy'] ?? 'id';
+        $filterBy = $data['filterBy'];
+        $page = $data['page'] ?? 1;
+        $search = $data['search'] ?? null;
 
         if ($search && method_exists(User::class, 'search')) {
             return new UserCollection(
@@ -129,7 +129,7 @@ class UserServiceImpl implements UserService
     {
         $user = $this->getUser($id);
 
-        return (bool) $user->is_active;
+        return (bool) $user->active;
     }
 
     /**
@@ -138,7 +138,7 @@ class UserServiceImpl implements UserService
     public function enableDisableUser(int $id): bool
     {
         $user = $this->getUser($id);
-        $user->is_active = ! $user->is_active;
+        $user->active = ! $user->active;
 
         return $user->save();
     }

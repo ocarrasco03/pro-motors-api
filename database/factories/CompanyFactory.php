@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Tax;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -25,10 +26,21 @@ class CompanyFactory extends Factory
             'city' => $this->faker->city(),
             'country' => $this->faker->country(),
             'zip_code' => $this->faker->postcode(),
-            'tax_id' => $this->faker->randomElement([1,2]),
             'license' => $this->faker->randomElement(['individual', 'corporate']),
             'status' => $this->faker->randomElement(['active', 'inactive', 'suspended']),
             'billing_period' => $this->faker->randomElement(['monthly', 'bimonthly', 'quarterly', 'annual', 'biannual']),
+            'slug' => $this->faker->unique()->slug(),
+            'created_by' => 'system',
+            'updated_by' => 'system',
         ];
+    }
+
+    public function withTax(): static
+    {
+        $tax = Tax::factory()->create();
+
+        return $this->state(fn ($attributes) => [
+            'tax_id' => $tax->id,
+        ]);
     }
 }

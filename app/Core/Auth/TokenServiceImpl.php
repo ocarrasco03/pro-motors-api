@@ -59,6 +59,6 @@ class TokenServiceImpl implements TokenService
             return false;
         }
 
-        return $token->expires_at->isPast();
+        return !$token->expires_at->isPast();
     }
 }

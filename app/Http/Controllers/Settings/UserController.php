@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Core\Settings\UserService;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Common\SearchRequest;
 use App\Http\Requests\Settings\ChangeUserPasswordRequest;
 use App\Http\Requests\Settings\StoreUserRequest;
 use App\Http\Requests\Settings\UpdateUserRequest;
@@ -19,9 +20,9 @@ class UserController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(SearchRequest $request)
     {
-        return $this->success($this->userService->getUsers());
+        return $this->success($this->userService->getUsers($request->validated()));
     }
 
     /**
@@ -72,7 +73,7 @@ class UserController extends Controller
     public function destroy(string $id)
     {
         if ($this->userService->deleteUser($id)) {
-            return $this->success(null, 'User deleted successfully.');
+            return $this->success(null, 'User deleted successfully.', 204);
         }
 
         return $this->error('Something went wrong. User could not be deleted.');
