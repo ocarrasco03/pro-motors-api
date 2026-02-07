@@ -46,8 +46,13 @@ enum StatusEnum: string
     case QUEUE     = 'queue';
 
     /**
-     * Schedule Jobs
+     * Schedule Jobs Statuses
      */
     case COMPLETED = 'completed';
     case RUNNING   = 'running';
+
+    /**
+     * Payments Statuses
+     */
+    case PAID       = 'paid';
 }

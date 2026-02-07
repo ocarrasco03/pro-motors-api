@@ -12,6 +12,8 @@ use App\Core\Settings\CompanyService;
 use App\Core\Settings\CompanyServiceImpl;
 use App\Core\Settings\UserService;
 use App\Core\Settings\UserServiceImpl;
+use App\Core\Subscriptions\SubscriptionService;
+use App\Core\Subscriptions\SubscriptionServiceImpl;
 use Illuminate\Support\ServiceProvider;
 
 class ProMotorsServiceProvider extends ServiceProvider
@@ -32,6 +34,7 @@ class ProMotorsServiceProvider extends ServiceProvider
             // Settings services
             CompanyService::class => CompanyServiceImpl::class,
             UserService::class => UserServiceImpl::class,
+            SubscriptionService::class => SubscriptionServiceImpl::class,
         ];
 
         foreach ($bindings as $abstract => $concrete) {
