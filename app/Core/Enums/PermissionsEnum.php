@@ -27,6 +27,8 @@ enum PermissionsEnum: string
     case VIEW_PRICE_LIST = 'company.price.lists.view';
     case EDIT_PRICE_LIST = 'company.price.lists.edit';
     case DELETE_PRICE_LIST = 'company.price.lists.delete';
+    case MANAGE_PRODUCT_PRICE_HISTORIES = 'company.price.history.manage';
+    case MANAGE_PENDING_PRICE_CHANGES = 'company.price.pending.change.manage';
 
     // Supplier management permissions
     case MANAGE_PROVIDER = 'providers.list';
@@ -71,4 +73,7 @@ enum PermissionsEnum: string
     case LIST_PERMISSIONS = 'permissions.list';
     case ASSIGN_PERMISSIONS = 'permissions.assign';
     case VIEW_PERMISSIONS = 'permissions.view';
+
+    // Settings
+    case MANAGE_SETTINGS = 'settings.manage';
 }
