@@ -15,7 +15,7 @@ class UpdateUserRequest extends FormRequest
         /** @var User $user */
         $user = $this->route('user');
 
-        return $this->user()->can('update', $user);
+        return $this->user()->can('update', User::class);
     }
 
     /**
@@ -26,13 +26,13 @@ class UpdateUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'first_name' => ['required', 'string', 'max:255'],
-            'last_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255'],
-            'username' => ['required', 'string', 'max:255', 'unique:users'],
+            'first_name' => ['sometimes', 'string', 'max:255'],
+            'last_name' => ['sometimes', 'string', 'max:255'],
+            'email' => ['sometimes', 'string', 'email', 'max:255'],
+            'username' => ['sometimes', 'string', 'max:255', 'unique:users'],
             'company' => ['sometimes', 'nullable', 'string', 'max:255', 'exists:companies,name'],
             'company_id' => ['sometimes', 'nullable', 'integer', 'exists:companies,id'],
-            'role' => ['required', 'string'],
+            'role' => ['sometimes', 'string'],
             'active' => ['sometimes', 'boolean'],
         ];
     }

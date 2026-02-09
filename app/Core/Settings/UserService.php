@@ -6,6 +6,7 @@ use App\Http\Requests\Common\SearchRequest;
 use App\Http\Resources\Settings\UserCollection;
 use App\Models\User;
 use Illuminate\Support\Collection;
+use Spatie\Permission\Models\Role;
 
 /**
  * Interface UserService
@@ -81,7 +82,7 @@ interface UserService
     /**
      * Assign a role to a user.
      */
-    public function assignRole(int $id, array $data): void;
+    public function assignRole(User $user, string|Role $role): void;
 
     /**
      * Remove a role from a user.

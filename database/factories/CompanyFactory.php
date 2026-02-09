@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Core\Enums\StatusEnum;
 use App\Models\Tax;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -41,6 +42,13 @@ class CompanyFactory extends Factory
 
         return $this->state(fn ($attributes) => [
             'tax_id' => $tax->id,
+        ]);
+    }
+
+    public function active(): static
+    {
+        return $this->state(fn ($attributes) => [
+            'status' => StatusEnum::ACTIVE,
         ]);
     }
 }

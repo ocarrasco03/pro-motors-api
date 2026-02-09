@@ -110,4 +110,39 @@ class User extends Authenticatable
             'active' => $this->active,
         ];
     }
+
+    public function isVisibleFor(User $user): bool
+    {
+        if ($this->company_id === $user->company_id) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isEditableFor(User $user): bool
+    {
+        if ($this->company_id === $user->company_id) {
+            return true;
+        }
+
+        if ($this->id === $user->id) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isDestroyableFor(User $user): bool
+    {
+        if ($this->id === $user->id) {
+            return false;
+        }
+
+        if ($this->company_id === $user->company_id) {
+            return true;
+        }
+
+        return false;
+    }
 }

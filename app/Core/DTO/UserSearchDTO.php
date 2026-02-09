@@ -3,25 +3,31 @@
 namespace App\Core\DTO;
 
 use App\Models\User;
+use Psr\Container\ContainerExceptionInterface;
+use Psr\Container\NotFoundExceptionInterface;
 
-final class UserSearchDTO
+final readonly class UserSearchDTO
 {
     public function __construct(
-        public readonly ?string $search,
-        public readonly int $perPage,
-        public readonly string $sortBy,
-        public readonly string $orderBy,
-        public readonly ?User $user,
+        public ?string $search,
+        public int     $perPage,
+        public string  $sortBy,
+        public string  $orderBy,
+        public ?User   $user,
     ) {}
 
+    /**
+     * @throws NotFoundExceptionInterface
+     * @throws ContainerExceptionInterface
+     */
     public static function fromRequest(): self
     {
         return new self(
             search: request()->get('search'),
-            perPage: request()->integer('perPage', 10),
-            sortBy: request()->integer('sortBy', 'id'),
-            orderBy: request()->integer('orderBy', 'asc'),
-            user: auth()->user(),
+            perPage: request()->get('perPage', 10),
+            sortBy: request()->get('sortBy', 'id'),
+            orderBy: request()->get('orderBy', 'asc'),
+            user: request()->user(),
         );
     }
 }

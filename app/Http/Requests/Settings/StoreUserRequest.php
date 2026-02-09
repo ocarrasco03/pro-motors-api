@@ -15,7 +15,7 @@ class StoreUserRequest extends FormRequest
         /** @var User $user */
         $user = $this->route('user');
 
-        return $this->user()->can('create', $user);
+        return $this->user()->can('create', User::class);
     }
 
     /**

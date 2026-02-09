@@ -6,6 +6,7 @@ use App\Core\Enums\RolesEnum;
 use App\Models\Company;
 use App\Models\User;
 use App\Policies\Settings\CompanyPolicy;
+use App\Policies\Settings\UserPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -18,6 +19,7 @@ class AuthServiceProvider extends ServiceProvider
      */
     protected $policies = [
         Company::class => CompanyPolicy::class,
+        User::class => UserPolicy::class,
         // Future:
         // PriceList::class => PriceListPolicy::class,
         // Product::class   => ProductPolicy::class,

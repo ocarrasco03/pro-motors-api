@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Core\Enums\RolesEnum;
+use App\Models\Company;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -29,5 +30,33 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $user->assignRole(RolesEnum::SUPER_ADMIN);
+
+        if (config('app.env') !== 'production') {
+
+            $company = Company::factory()
+                ->withTax()
+                ->active()
+                ->create();
+
+            $user = User::factory()->create([
+                'first_name' => 'Test',
+                'last_name' => 'Admin',
+                'email' => 'test@example.com',
+                'username' => 'testAdmin',
+                'company_id' => $company->id,
+            ]);
+
+            $user->assignRole(RolesEnum::ADMIN);
+
+            $user = User::factory()->create([
+                'first_name' => 'Test',
+                'last_name' => 'Normal User',
+                'email' => 'test@example.com',
+                'username' => 'testUser',
+                'company_id' => $company->id,
+            ]);
+
+            $user->assignRole(RolesEnum::USER);
+        }
     }
 }

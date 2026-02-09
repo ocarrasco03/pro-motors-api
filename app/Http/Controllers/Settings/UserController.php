@@ -78,4 +78,12 @@ class UserController extends Controller
 
         return $this->error('Something went wrong. User could not be deleted.');
     }
+
+    protected function resourceAbilityMap(): array
+    {
+        return array_merge(parent::resourceAbilityMap(), [
+            'changePassword' => 'changePassword',
+            'toggle' => 'edit',
+        ]);
+    }
 }

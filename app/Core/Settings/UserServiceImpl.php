@@ -5,8 +5,13 @@ namespace App\Core\Settings;
 use App\Http\Resources\Settings\UserCollection;
 use App\Models\Company;
 use App\Models\User;
+use Exception;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Spatie\Permission\Models\Role;
+use Throwable;
 
 class UserServiceImpl implements UserService
 {
@@ -32,8 +37,8 @@ class UserServiceImpl implements UserService
     {
         $perPage = $data['perPage'] ?? 10;
         $sortBy = $data['sortBy'] ?? 'id';
-        $orderBy = $data['orderBy'] ?? 'id';
-        $filterBy = $data['filterBy'];
+        $orderBy = $data['orderBy'] ?? 'asc';
+        $filterBy = $data['filterBy'] ?? null;
         $page = $data['page'] ?? 1;
         $search = $data['search'] ?? null;
 
@@ -74,21 +79,68 @@ class UserServiceImpl implements UserService
 
     /**
      * Create a new user.
+     * @throws Throwable
      */
     public function createUser(array $data): User
     {
-        $data['password'] = Hash::make($data['password']);
+        try{
+            DB::beginTransaction();
 
-        return User::create($data);
+            $data['password'] = Hash::make($data['password']);
+
+            if ($this->authUser && ! is_null($this->authUser->company_id)) {
+                $data['company_id'] = $this->authUser->company_id;
+            } elseif (isset($data['company'])) {
+                $data['company_id'] = $this->resolveCompany($data['company']);
+            }
+
+            $user = User::create($data);
+
+            $this->assignRole($user, $data['role']);
+
+            DB::commit();
+        } catch (Exception $exception) {
+            DB::rollBack();
+
+            Log::error($exception->getMessage());
+            throw new Exception($exception->getMessage());
+        }
+
+        return $user;
     }
 
     /**
      * Update an existing user.
+     * @throws Exception|Throwable
      */
     public function updateUser(int $id, array $data): User
     {
-        $user = $this->getUser($id);
-        $user->update($data);
+        try {
+            DB::beginTransaction();
+            $user = $this->getUser($id);
+
+            if (isset($data['company_id']) || isset($data['company'])) {
+                if ($this->authUser && ! is_null($this->authUser->company_id)) {
+                    if ($this->authUser()->company_id == $user->company_id) {
+                        $data['company_id'] = $this->authUser->company_id;
+                    }
+                } elseif (isset($data['company'])) {
+                    $data['company_id'] = $this->resolveCompany($data['company']);
+                }
+            }
+
+            $user->update($data);
+
+            if (isset($data['role'])) {
+                $this->assignRole($user, $data['role']);
+            }
+
+            DB::commit();
+        } catch (Throwable|Exception $exception) {
+            DB::rollBack();
+            Log::error($exception->getMessage());
+            throw new Exception($exception->getMessage());
+        }
 
         return $user;
     }
@@ -173,11 +225,14 @@ class UserServiceImpl implements UserService
 
     /**
      * Assign a role to a user.
+     *
+     * @throws Throwable
      */
-    public function assignRole(int $id, array $data): void
+    public function assignRole(User $user, string|Role $role): void
     {
-        $user = $this->getUser($id);
-        $user->assignRole($data['role']);
+        DB::transaction(function () use ($user, $role) {
+            $user->syncRoles([$role]);
+        });
     }
 
     /**
@@ -221,5 +276,14 @@ class UserServiceImpl implements UserService
     public function getPermissions(int $id): Collection
     {
         return $this->getUser($id)->permissions;
+    }
+
+    protected function resolveCompany(int|string $company): int
+    {
+        if (is_numeric($company)) {
+            return (int) $company;
+        }
+
+        return Company::where('name', $company)->pluck('id')->firstOrFail();
     }
 }

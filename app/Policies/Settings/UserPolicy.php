@@ -20,7 +20,8 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        return $user->can(PermissionsEnum::VIEW_USER->value, $model);
+        return $user->can(PermissionsEnum::VIEW_USER->value) &&
+            $user->isVisibleFor($model);
     }
 
     /**
@@ -36,7 +37,8 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        return $user->can(PermissionsEnum::EDIT_USER->value, $model);
+        return $user->can(PermissionsEnum::EDIT_USER->value) &&
+            $user->isEditableFor($model);
     }
 
     /**
@@ -44,7 +46,7 @@ class UserPolicy
      */
     public function changePassword(User $user, User $model): bool
     {
-        return $user->can(PermissionsEnum::CHANGE_USER_PASSWORD->value, $model);
+        return $user->can(PermissionsEnum::CHANGE_USER_PASSWORD->value);
     }
 
     /**
@@ -52,7 +54,8 @@ class UserPolicy
      */
     public function delete(User $user, User $model): bool
     {
-        return $user->can(PermissionsEnum::DELETE_USER->value, $model);
+        return $user->can(PermissionsEnum::DELETE_USER->value) &&
+            $user->isDestroyableFor($model);
     }
 
     /**
@@ -60,7 +63,7 @@ class UserPolicy
      */
     public function restore(User $user, User $model): bool
     {
-        return $user->can(PermissionsEnum::RESTORE_USER->value, $model);
+        return $user->can(PermissionsEnum::RESTORE_USER->value);
     }
 
     /**
@@ -68,6 +71,6 @@ class UserPolicy
      */
     public function forceDelete(User $user, User $model): bool
     {
-        return $user->can(PermissionsEnum::FORCE_DELETE_USER->value, $model);
+        return $user->can(PermissionsEnum::FORCE_DELETE_USER->value);
     }
 }

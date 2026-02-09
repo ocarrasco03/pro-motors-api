@@ -13,7 +13,7 @@ class AuthServiceImpl implements AuthService
 {
     use ApiResponse;
 
-    public function __construct(protected TokenServiceImpl $tokenService) {}
+    public function __construct(protected TokenService $tokenService) {}
 
     public function login(array $data): array
     {
