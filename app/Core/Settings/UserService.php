@@ -52,12 +52,12 @@ interface UserService
     /**
      * Reset a user's password.
      */
-    public function resetPassword(int $id, array $data): bool;
+    public function resetPassword(User $user, array $data): bool;
 
     /**
      * Determine whether a user is active.
      */
-    public function isUserActive(int $id): bool;
+    public function isUserActive(User $user): bool;
 
     /**
      * Enable or disable a user.
@@ -89,25 +89,25 @@ interface UserService
     /**
      * Remove a role from a user.
      */
-    public function removeRole(int $id, array $data): void;
+    public function removeRole(User $user, array $data): void;
 
     /**
      * Get roles assigned to a user.
      */
-    public function getRoles(int $id): Collection;
+    public function getRoles(User $user): Collection;
 
     /**
      * Assign a permission to a user.
      */
-    public function assignPermission(int $id, array $data): void;
+    public function assignPermission(User $user, array $data): void;
 
     /**
      * Remove a permission from a user.
      */
-    public function removePermission(int $id, array $data): void;
+    public function removePermission(User $user, array $data): void;
 
     /**
      * Get permissions assigned directly to a user.
      */
-    public function getPermissions(int $id): Collection;
+    public function getPermissions(User $user): Collection;
 }

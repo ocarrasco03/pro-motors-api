@@ -3,6 +3,8 @@
 namespace Tests\Unit\Core\Settings;
 
 
+use App\Core\DTO\Common\SearchDTO;
+use App\Core\Enums\RolesEnum;
 use App\Core\Settings\UserServiceImpl;
 use App\Http\Resources\Settings\UserCollection;
 use App\Models\Company;
@@ -14,6 +16,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use ReflectionClass;
 use ReflectionException;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class UserServiceImplTest extends TestCase
@@ -50,10 +54,10 @@ class UserServiceImplTest extends TestCase
         ]);
 
         // Create test roles and permissions
-        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
-        \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
-        \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'edit-users', 'guard_name' => 'web']);
-        \Spatie\Permission\Models\Permission::firstOrCreate(['name' => 'view-reports', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'admin', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'user', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'edit-users', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'view-reports', 'guard_name' => 'web']);
 
         // Properly mock Auth facade
         Auth::shouldReceive('user')->andReturn($this->authUser);
@@ -86,9 +90,16 @@ class UserServiceImplTest extends TestCase
 
     public function test_get_users_with_search_uses_scout_when_available()
     {
-        $data = ['search' => 'test', 'perPage' => 10];
+        $data = new SearchDTO(
+            search: 'test',
+            perPage: 10,
+            sortBy: 'id',
+            orderBy: 'asc',
+            authUser: $this->authUser,
+            page: null,
+            filterBy: null
+        );
 
-        // Skip Scout test as it requires complex mocking
         $result = $this->userService->getUsers($data);
 
         $this->assertInstanceOf(UserCollection::class, $result);
@@ -102,7 +113,16 @@ class UserServiceImplTest extends TestCase
             'company_id' => $this->company->id,
         ]);
 
-        $data = ['search' => 'SearchTarget'];
+        $$data = new SearchDTO(
+            search: 'SearchTarget',
+            perPage: 10,
+            sortBy: 'id',
+            orderBy: 'asc',
+            authUser: $this->authUser,
+            page: null,
+            filterBy: null
+        );
+
         $result = $this->userService->getUsers($data);
 
         $this->assertInstanceOf(UserCollection::class, $result);
@@ -110,13 +130,15 @@ class UserServiceImplTest extends TestCase
 
     public function test_get_users_with_custom_filters()
     {
-        $data = [
-            'perPage' => 5,
-            'sortBy' => 'email',
-            'orderBy' => 'desc',
-            'page' => 2,
-            'filterBy' => ['active' => true],
-        ];
+        $data = new SearchDTO(
+            search: null,
+            perPage: 5,
+            sortBy: 'email',
+            orderBy: 'desc',
+            authUser: $this->authUser,
+            page: null,
+            filterBy: ['active' => true]
+        );
 
         $result = $this->userService->getUsers($data);
 
@@ -126,7 +148,7 @@ class UserServiceImplTest extends TestCase
     public function test_update_user_succeeds_for_same_company()
     {
         $updateData = ['first_name' => 'Updated Name'];
-        $result = $this->userService->updateUser($this->targetUser->id, $updateData);
+        $result = $this->userService->updateUser($this->targetUser, $updateData);
 
         $this->assertInstanceOf(User::class, $result);
         $this->assertEquals('Updated Name', $result->first_name);
@@ -159,7 +181,7 @@ class UserServiceImplTest extends TestCase
         $newPassword = 'NewPassword123!';
         $data = ['password' => $newPassword];
 
-        $result = $this->userService->resetPassword($this->targetUser->id, $data);
+        $result = $this->userService->resetPassword($this->targetUser, $data);
 
         $this->assertTrue($result);
 
@@ -180,7 +202,7 @@ class UserServiceImplTest extends TestCase
     {
         $originalStatus = $this->targetUser->active;
 
-        $result = $this->userService->enableDisableUser($this->targetUser->id);
+        $result = $this->userService->enableDisableUser($this->targetUser);
 
         $this->assertTrue($result);
 
@@ -232,12 +254,9 @@ class UserServiceImplTest extends TestCase
 
     public function test_assign_role_to_user()
     {
-        $roleName = 'admin';
-        $data = ['role' => $roleName];
+        $this->userService->assignRole($this->targetUser, RolesEnum::ADMIN->value);
 
-        $this->userService->assignRole($this->targetUser->id, $data);
-
-        $this->assertTrue($this->targetUser->fresh()->hasRole($roleName));
+        $this->assertTrue($this->targetUser->fresh()->hasRole(RolesEnum::ADMIN));
     }
 
     public function test_remove_role_from_user()
@@ -246,17 +265,17 @@ class UserServiceImplTest extends TestCase
         $this->targetUser->assignRole($roleName);
         $data = ['role' => $roleName];
 
-        $this->userService->removeRole($this->targetUser->id, $data);
+        $this->userService->removeRole($this->targetUser, $data);
 
         $this->assertFalse($this->targetUser->fresh()->hasRole($roleName));
     }
 
     public function test_get_roles_returns_user_roles()
     {
-        $this->targetUser->assignRole('user');
-        $this->targetUser->assignRole('admin');
+        $this->targetUser->assignRole(RolesEnum::USER->value);
+        $this->targetUser->assignRole(RolesEnum::ADMIN->value);
 
-        $result = $this->userService->getRoles($this->targetUser->id);
+        $result = $this->userService->getRoles($this->targetUser);
 
         $this->assertInstanceOf(Collection::class, $result);
         $this->assertGreaterThan(0, $result->count());
@@ -267,7 +286,7 @@ class UserServiceImplTest extends TestCase
         $permissionName = 'edit-users';
         $data = ['permission' => $permissionName];
 
-        $this->userService->assignPermission($this->targetUser->id, $data);
+        $this->userService->assignPermission($this->targetUser, $data);
 
         $this->assertTrue($this->targetUser->fresh()->hasDirectPermission($permissionName));
     }
@@ -278,7 +297,7 @@ class UserServiceImplTest extends TestCase
         $this->targetUser->givePermissionTo($permissionName);
         $data = ['permission' => $permissionName];
 
-        $this->userService->removePermission($this->targetUser->id, $data);
+        $this->userService->removePermission($this->targetUser, $data);
 
         $this->assertFalse($this->targetUser->fresh()->hasDirectPermission($permissionName));
     }
@@ -288,7 +307,7 @@ class UserServiceImplTest extends TestCase
         $this->targetUser->givePermissionTo('edit-users');
         $this->targetUser->givePermissionTo('view-reports');
 
-        $result = $this->userService->getPermissions($this->targetUser->id);
+        $result = $this->userService->getPermissions($this->targetUser);
 
         $this->assertInstanceOf(\Illuminate\Support\Collection::class, $result);
         $this->assertGreaterThan(0, $result->count());
@@ -352,7 +371,7 @@ class UserServiceImplTest extends TestCase
         $userService = new UserServiceImpl;
 
         $updateData = ['first_name' => 'Updated Name'];
-        $result = $userService->updateUser($this->targetUser->id, $updateData);
+        $result = $userService->updateUser($this->targetUser, $updateData);
 
         $this->assertInstanceOf(User::class, $result);
         $this->assertEquals('Updated Name', $result->first_name);
@@ -391,7 +410,7 @@ class UserServiceImplTest extends TestCase
     {
         $data = ['password' => ''];
 
-        $result = $this->userService->resetPassword($this->targetUser->id, $data);
+        $result = $this->userService->resetPassword($this->targetUser, $data);
 
         $this->assertTrue($result);
 
@@ -404,7 +423,7 @@ class UserServiceImplTest extends TestCase
         $weakPassword = '123';
         $data = ['password' => $weakPassword];
 
-        $result = $this->userService->resetPassword($this->targetUser->id, $data);
+        $result = $this->userService->resetPassword($this->targetUser, $data);
 
         $this->assertTrue($result);
 
@@ -416,7 +435,7 @@ class UserServiceImplTest extends TestCase
     {
         $this->expectException(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
 
-        $this->userService->isUserActive(99999);
+        $this->userService->isUserActive(new User());
     }
 
     public function test_is_user_active_with_soft_deleted_user()
@@ -425,7 +444,7 @@ class UserServiceImplTest extends TestCase
 
         $this->expectException(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
 
-        $this->userService->isUserActive($this->targetUser->id);
+        $this->userService->isUserActive($this->targetUser);
     }
 
     public function test_enable_disable_user_multiple_times()
@@ -433,14 +452,14 @@ class UserServiceImplTest extends TestCase
         $originalStatus = $this->targetUser->active;
 
         // First toggle
-        $result1 = $this->userService->enableDisableUser($this->targetUser->id);
+        $result1 = $this->userService->enableDisableUser($this->targetUser);
         $updatedUser1 = User::find($this->targetUser->id);
 
         $this->assertTrue($result1);
         $this->assertNotEquals($originalStatus, $updatedUser1->active);
 
         // Second toggle (should return to original)
-        $result2 = $this->userService->enableDisableUser($this->targetUser->id);
+        $result2 = $this->userService->enableDisableUser($this->targetUser);
         $updatedUser2 = User::find($this->targetUser->id);
 
         $this->assertTrue($result2);
@@ -495,16 +514,14 @@ class UserServiceImplTest extends TestCase
     {
         $this->expectException(\Spatie\Permission\Exceptions\RoleDoesNotExist::class);
 
-        $data = ['role' => 'nonexistent-role'];
-        $this->userService->assignRole($this->targetUser->id, $data);
+        $this->userService->assignRole($this->targetUser, 'nonexistent-role');
     }
 
     public function test_assign_role_to_nonexistent_user()
     {
         $this->expectException(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
 
-        $data = ['role' => 'user'];
-        $this->userService->assignRole(99999, $data);
+        $this->userService->assignRole(new User(), 'no-role');
     }
 
     public function test_remove_role_with_nonexistent_role()
@@ -513,7 +530,7 @@ class UserServiceImplTest extends TestCase
 
         $data = ['role' => 'truly-nonexistent-role'];
 
-        $this->userService->removeRole($this->targetUser->id, $data);
+        $this->userService->removeRole($this->targetUser, $data);
     }
 
     public function test_get_roles_with_user_no_roles()
@@ -531,7 +548,7 @@ class UserServiceImplTest extends TestCase
         $this->expectException(\Spatie\Permission\Exceptions\PermissionDoesNotExist::class);
 
         $data = ['permission' => 'nonexistent-permission'];
-        $this->userService->assignPermission($this->targetUser->id, $data);
+        $this->userService->assignPermission($this->targetUser, $data);
     }
 
     public function test_remove_permission_with_nonexistent_permission()
@@ -540,7 +557,7 @@ class UserServiceImplTest extends TestCase
 
         $data = ['permission' => 'truly-nonexistent-permission'];
 
-        $this->userService->removePermission($this->targetUser->id, $data);
+        $this->userService->removePermission($this->targetUser, $data);
     }
 
     public function test_get_permissions_with_user_no_permissions()

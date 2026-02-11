@@ -3,6 +3,7 @@
 namespace App\Core\Settings;
 
 use App\Core\DTO\Common\SearchDTO;
+use App\Core\Settings\UserService;
 use App\Http\Resources\Settings\UserCollection;
 use App\Http\Resources\Settings\UserResource;
 use App\Models\Company;
@@ -171,9 +172,8 @@ class UserServiceImpl implements UserService
     /**
      * Reset a user's password.
      */
-    public function resetPassword(int $id, array $data): bool
+    public function resetPassword(User $user, array $data): bool
     {
-        $user = $this->getUser($id);
         $user->password = Hash::make($data['password']);
 
         return $user->save();
@@ -182,10 +182,8 @@ class UserServiceImpl implements UserService
     /**
      * Determine whether a user is active.
      */
-    public function isUserActive(int $id): bool
+    public function isUserActive(User $user): bool
     {
-        $user = $this->getUser($id);
-
         return (bool) $user->active;
     }
 
@@ -242,44 +240,41 @@ class UserServiceImpl implements UserService
     /**
      * Remove a role from a user.
      */
-    public function removeRole(int $id, array $data): void
+    public function removeRole(User $user, array $data): void
     {
-        $user = $this->getUser($id);
         $user->removeRole($data['role']);
     }
 
     /**
      * Get roles assigned to a user.
      */
-    public function getRoles(int $id): Collection
+    public function getRoles(User $user): Collection
     {
-        return $this->getUser($id)->roles;
+        return $user->roles;
     }
 
     /**
      * Assign a permission to a user.
      */
-    public function assignPermission(int $id, array $data): void
+    public function assignPermission(User $user, array $data): void
     {
-        $user = $this->getUser($id);
         $user->givePermissionTo($data['permission']);
     }
 
     /**
      * Remove a permission from a user.
      */
-    public function removePermission(int $id, array $data): void
+    public function removePermission(User $user, array $data): void
     {
-        $user = $this->getUser($id);
         $user->revokePermissionTo($data['permission']);
     }
 
     /**
      * Get permissions assigned directly to a user.
      */
-    public function getPermissions(int $id): Collection
+    public function getPermissions(User $user): Collection
     {
-        return $this->getUser($id)->permissions;
+        return $user->all_permissions;
     }
 
     protected function resolveCompany(int|string $company): int
