@@ -192,9 +192,8 @@ class UserServiceImpl implements UserService
     /**
      * Enable or disable a user.
      */
-    public function enableDisableUser(int $id): bool
+    public function enableDisableUser(User $user): bool
     {
-        $user = $this->getUser($id);
         $user->active = ! $user->active;
 
         return $user->save();

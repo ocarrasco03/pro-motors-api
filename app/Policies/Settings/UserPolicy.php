@@ -37,8 +37,8 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        return $user->can(PermissionsEnum::EDIT_USER) &&
-            $user->isEditableFor($model);
+        return ($user->can(PermissionsEnum::EDIT_USER) &&
+            $user->isEditableFor($model)) || $user->id === $model->id;
     }
 
     /**

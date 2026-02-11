@@ -35,6 +35,7 @@ Route::group(['prefix' => 'v1'], function () {
                 Route::get('/{user}', [UserController::class, 'show']);
                 Route::put('/{user}', [UserController::class, 'update']);
                 Route::delete('/{user}', [UserController::class, 'destroy']);
+                Route::patch('/{user}/toggle', [UserController::class, 'toggle']);
             });
         });
     });

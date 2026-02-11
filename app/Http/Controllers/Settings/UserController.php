@@ -31,7 +31,7 @@ class UserController extends Controller
      */
     public function store(StoreUserRequest $request)
     {
-        return $this->success($this->userService->createUser($request->validated()));
+        return $this->success($this->userService->createUser($request->validated()), 'User has been created.', 201);
     }
 
     /**
@@ -70,6 +70,18 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         return $this->success($this->userService->deleteUser($user), 'User deleted successfully.', 204);
+    }
+
+    /**
+     * Toggle a user's active state.
+     */
+    public function toggle(User $user)
+    {
+        if ($this->userService->enableDisableUser($user)) {
+            return $this->success($user->refresh(), 'User status updated.');
+        }
+
+        return $this->error('Something went wrong. Could not update user status.');
     }
 
     protected function resourceAbilityMap(): array

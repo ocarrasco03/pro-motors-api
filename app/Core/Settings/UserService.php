@@ -62,7 +62,7 @@ interface UserService
     /**
      * Enable or disable a user.
      */
-    public function enableDisableUser(int $id): bool;
+    public function enableDisableUser(User $user): bool;
 
     /**
      * Get all users belonging to a company.

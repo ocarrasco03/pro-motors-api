@@ -22,29 +22,17 @@ class AuthTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->seed(BootRolesPermissionsSeeder::class);
-
-        // Create tax record first
-        $tax = Tax::create([
-            'name' => 'Test Tax',
-            'type' => 'iva',
-            'rate' => 0.16,
-        ]);
-
-        // Create company
-        $this->company = Company::create([
+        $this->company = Company::factory()->withTax()->active()->create([
             'name' => 'Test Company',
             'email' => 'test@company.com',
             'owner_name' => 'Test Owner',
-            'tax_id' => $tax->id,
             'created_by' => 'system',
             'updated_by' => 'system',
         ]);
 
         $this->user = User::factory()->create([
             'company_id' => $this->company->id,
-            'password' => bcrypt('password123'),
+            'password' => 'password123',
         ]);
         $this->user->assignRole('user');
     }
