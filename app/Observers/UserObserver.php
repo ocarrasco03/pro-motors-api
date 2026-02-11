@@ -14,7 +14,7 @@ class UserObserver
             $user->syncRoles([$role]);
         }
 
-        //ReindexModelJob::dispatch(User::class, [$user->id]);
+        ReindexModelJob::dispatch(User::class, [$user->id]);
     }
 
     public function updated(User $user): void
