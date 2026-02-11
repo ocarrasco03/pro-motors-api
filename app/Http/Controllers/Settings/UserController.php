@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Core\Enums\PermissionsEnum;
 use App\Core\Settings\UserService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Common\SearchRequest;
@@ -22,7 +23,7 @@ class UserController extends Controller
      */
     public function index(SearchRequest $request)
     {
-        return $this->success($this->userService->getUsers($request->validated()));
+        return $this->success($this->userService->getUsers($request->toDTO()));
     }
 
     /**
@@ -36,21 +37,17 @@ class UserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(User $user)
     {
-        return $this->success($this->userService->getUser($id));
+        return $this->success($this->userService->getUser($user));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateUserRequest $request, string $id)
+    public function update(UpdateUserRequest $request, User $user)
     {
-        if ($this->userService->updateUser($id, $request->validated())) {
-            return $this->success($this->userService->getUser($id), 'User updated successfully.');
-        }
-
-        return $this->error('Something went wrong.');
+        return $this->success($this->userService->updateUser($user, $request->validated()), 'User updated successfully.');
     }
 
     /**
@@ -70,13 +67,9 @@ class UserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(User $user)
     {
-        if ($this->userService->deleteUser($id)) {
-            return $this->success(null, 'User deleted successfully.', 204);
-        }
-
-        return $this->error('Something went wrong. User could not be deleted.');
+        return $this->success($this->userService->deleteUser($user), 'User deleted successfully.', 204);
     }
 
     protected function resourceAbilityMap(): array

@@ -57,6 +57,9 @@ class DatabaseSeeder extends Seeder
             ]);
 
             $user->assignRole(RolesEnum::USER);
+
+            User::factory(25)->withCompany($company->id)->create();
+            Company::factory(10)->withTax()->create();
         }
     }
 }

@@ -32,7 +32,15 @@ class BootRolesPermissionsSeeder extends Seeder
         $superAdminRole?->syncPermissions($permissions);
 
         $adminPermissions = $permissions
-            ->filter(fn ($permission) => !str_contains($permission->name, 'delete') || str_contains($permission->name, 'delete.user'));
+            ->filter(function ($permission) {
+                if(!str_contains($permission->name, 'delete')) {
+                    return true;
+                }
+
+                return in_array($permission->name, [
+                    PermissionsEnum::DELETE_USER->value
+                ], true);
+            });
         $adminRole?->syncPermissions($adminPermissions);
 
         $managerPermissions = $permissions

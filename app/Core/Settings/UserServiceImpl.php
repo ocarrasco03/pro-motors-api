@@ -2,7 +2,9 @@
 
 namespace App\Core\Settings;
 
+use App\Core\DTO\Common\SearchDTO;
 use App\Http\Resources\Settings\UserCollection;
+use App\Http\Resources\Settings\UserResource;
 use App\Models\Company;
 use App\Models\User;
 use Exception;
@@ -33,25 +35,25 @@ class UserServiceImpl implements UserService
     /**
      * Retrieve all users.
      */
-    public function getUsers(array $data): UserCollection
+    public function getUsers(SearchDTO $data): UserCollection
     {
-        $perPage = $data['perPage'] ?? 10;
-        $sortBy = $data['sortBy'] ?? 'id';
-        $orderBy = $data['orderBy'] ?? 'asc';
-        $filterBy = $data['filterBy'] ?? null;
-        $page = $data['page'] ?? 1;
-        $search = $data['search'] ?? null;
+        $perPage = $data->perPage ?? 10;
+        $sortBy = $data->sortBy ?? 'id';
+        $orderBy = $data->orderBy ?? 'asc';
+        $filterBy = $data->filterBy ?? [];
+        $search = $data->search ?? '';
 
         if ($search && method_exists(User::class, 'search')) {
             return new UserCollection(
-                User::search($search)
-                    ->where('company_id', $this->authUser()->company_id)
-                    ->paginate($perPage)
+                User::search($search, function ($engine, $query, $options) {
+                    $options['filter'] = 'company_id = ' . $this->authUser()->company_id;
+                    return $engine->search($query, $options);
+                })->paginate($perPage)
             );
         }
 
         $query = User::query()
-            ->visibleFor($this->authUser())
+            ->visibleFor($data->authUser)
             ->with(['company:id,name,slug', 'roles:name'])
             ->orderBy($sortBy, $orderBy);
 
@@ -72,25 +74,26 @@ class UserServiceImpl implements UserService
     /**
      * Retrieve a single user by ID.
      */
-    public function getUser(int $id): User
+    public function getUser(User $user): UserResource
     {
-        return User::with(['roles', 'permissions', 'company'])->findOrFail($id);
+        return new UserResource($user->refresh()->load(['roles', 'permissions', 'company']));
     }
 
     /**
      * Create a new user.
      * @throws Throwable
      */
-    public function createUser(array $data): User
+    public function createUser(array $data): UserResource
     {
         try{
             DB::beginTransaction();
 
             $data['password'] = Hash::make($data['password']);
 
-            if ($this->authUser && ! is_null($this->authUser->company_id)) {
-                $data['company_id'] = $this->authUser->company_id;
-            } elseif (isset($data['company'])) {
+            if (! is_null($this->authUser()->company_id)) {
+                $data['company_id'] = $this->authUser()->company_id;
+                unset($data['company']);
+            } elseif (array_key_exists('company', $data)) {
                 $data['company_id'] = $this->resolveCompany($data['company']);
             }
 
@@ -106,25 +109,27 @@ class UserServiceImpl implements UserService
             throw new Exception($exception->getMessage());
         }
 
-        return $user;
+        return new UserResource(
+            $user
+                ->refresh()
+                ->load(['roles', 'company'])
+        );
     }
 
     /**
      * Update an existing user.
      * @throws Exception|Throwable
      */
-    public function updateUser(int $id, array $data): User
+    public function updateUser(User $user, array $data): UserResource
     {
         try {
             DB::beginTransaction();
-            $user = $this->getUser($id);
 
             if (isset($data['company_id']) || isset($data['company'])) {
-                if ($this->authUser && ! is_null($this->authUser->company_id)) {
-                    if ($this->authUser()->company_id == $user->company_id) {
-                        $data['company_id'] = $this->authUser->company_id;
-                    }
-                } elseif (isset($data['company'])) {
+                if (! is_null($this->authUser()->company_id)) {
+                    $data['company_id'] = $this->authUser()->company_id;
+                    unset($data['company']);
+                } elseif (array_key_exists('company', $data)) {
                     $data['company_id'] = $this->resolveCompany($data['company']);
                 }
             }
@@ -142,15 +147,15 @@ class UserServiceImpl implements UserService
             throw new Exception($exception->getMessage());
         }
 
-        return $user;
+        return new UserResource($user->refresh()->load(['roles', 'company']));
     }
 
     /**
      * Soft delete a user.
      */
-    public function deleteUser(int $id): bool
+    public function deleteUser(User $user): bool
     {
-        return (bool) User::findOrFail($id)->delete();
+        return (bool) $user->delete();
     }
 
     /**

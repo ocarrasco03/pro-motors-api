@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Common;
 
+use App\Core\DTO\Common\SearchDTO;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SearchRequest extends FormRequest
@@ -29,5 +30,18 @@ class SearchRequest extends FormRequest
             'sortBy' => 'sometimes|string|nullable',
             'filterBy' => 'sometimes|array|nullable',
         ];
+    }
+
+    public function toDTO(): SearchDTO
+    {
+        return new SearchDTO(
+            search: $this->input('search'),
+            sortBy: $this->input('sortBy', 'id'),
+            orderBy: $this->input('orderBy', 'asc'),
+            perPage: $this->input('perPage', 15),
+            authUser: $this->user(),
+            page: $this->input('page', 1),
+            filterBy: $this->input('filterBy', []),
+        );
     }
 }

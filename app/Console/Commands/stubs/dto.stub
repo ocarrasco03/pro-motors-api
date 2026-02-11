@@ -1,0 +1,17 @@
+<?php
+
+namespace {{ namespace }};
+
+final readonly class {{ class }}
+{
+    public function __construct(
+        public int $example;
+    ) {}
+
+    public static function fromRequest(): self
+    {
+        return new self(
+            example: request->get('example')
+        );
+    }
+}

@@ -25,9 +25,14 @@ class UserResource extends JsonResource
             'lastLoginAt' => $this->last_login_at,
             'updatedBy' => $this->updated_by,
             'updatedAt' => $this->updated_at,
-            'company' => new CompanyUserResource($this->whenLoaded('company')),
-            'roles' => RoleResource::collection($this->whenLoaded('roles')),
-            'permissions' => PermissionResource::collection($this->all_permissions),
+            'company' => $this->whenLoaded(
+                'company',
+                fn () => new CompanyUserResource($this->company)
+            ),
+            'role' => $this->whenLoaded(
+                'roles',
+                fn () => $this->roles->first()?->name
+            )
         ];
     }
 }

@@ -2,8 +2,10 @@
 
 namespace App\Core\Settings;
 
+use App\Core\DTO\Common\SearchDTO;
 use App\Http\Requests\Common\SearchRequest;
 use App\Http\Resources\Settings\UserCollection;
+use App\Http\Resources\Settings\UserResource;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Spatie\Permission\Models\Role;
@@ -20,27 +22,27 @@ interface UserService
     /**
      * Retrieve all users.
      */
-    public function getUsers(array $data): UserCollection;
+    public function getUsers(SearchDTO $data): UserCollection;
 
     /**
      * Retrieve a single user by ID.
      */
-    public function getUser(int $id): User;
+    public function getUser(User $user): UserResource;
 
     /**
      * Create a new user.
      */
-    public function createUser(array $data): User;
+    public function createUser(array $data): UserResource;
 
     /**
      * Update an existing user.
      */
-    public function updateUser(int $id, array $data): User;
+    public function updateUser(User $user, array $data): UserResource;
 
     /**
      * Soft delete a user.
      */
-    public function deleteUser(int $id): bool;
+    public function deleteUser(User $user): bool;
 
     /**
      * Restore a soft-deleted user.

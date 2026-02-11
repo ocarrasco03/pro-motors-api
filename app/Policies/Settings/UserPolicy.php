@@ -12,7 +12,7 @@ class UserPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can(PermissionsEnum::LIST_USERS->value);
+        return $user->can(PermissionsEnum::LIST_USERS);
     }
 
     /**
@@ -20,8 +20,8 @@ class UserPolicy
      */
     public function view(User $user, User $model): bool
     {
-        return $user->can(PermissionsEnum::VIEW_USER->value) &&
-            $user->isVisibleFor($model);
+        return $user->can(PermissionsEnum::VIEW_USER) &&
+            $user->canSeeUser($model);
     }
 
     /**
@@ -29,7 +29,7 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can(PermissionsEnum::CREATE_USER->value);
+        return $user->can(PermissionsEnum::CREATE_USER);
     }
 
     /**
@@ -37,7 +37,7 @@ class UserPolicy
      */
     public function update(User $user, User $model): bool
     {
-        return $user->can(PermissionsEnum::EDIT_USER->value) &&
+        return $user->can(PermissionsEnum::EDIT_USER) &&
             $user->isEditableFor($model);
     }
 
@@ -46,7 +46,7 @@ class UserPolicy
      */
     public function changePassword(User $user, User $model): bool
     {
-        return $user->can(PermissionsEnum::CHANGE_USER_PASSWORD->value);
+        return $user->can(PermissionsEnum::CHANGE_USER_PASSWORD);
     }
 
     /**
@@ -54,7 +54,7 @@ class UserPolicy
      */
     public function delete(User $user, User $model): bool
     {
-        return $user->can(PermissionsEnum::DELETE_USER->value) &&
+        return $user->can(PermissionsEnum::DELETE_USER) &&
             $user->isDestroyableFor($model);
     }
 

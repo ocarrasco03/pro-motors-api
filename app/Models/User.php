@@ -111,9 +111,13 @@ class User extends Authenticatable
         ];
     }
 
-    public function isVisibleFor(User $user): bool
+    public function canSeeUser(User $user): bool
     {
-        if ($this->company_id === $user->company_id) {
+        if ($this->hasRole(RolesEnum::SUPER_ADMIN->value) && $this->company_id === null) {
+            return true;
+        }
+
+        if ($this->company_id !== null && $this->company_id === $user->company_id) {
             return true;
         }
 
@@ -122,11 +126,15 @@ class User extends Authenticatable
 
     public function isEditableFor(User $user): bool
     {
-        if ($this->company_id === $user->company_id) {
+        if ($this->hasRole(RolesEnum::SUPER_ADMIN->value) && $this->company_id === null) {
             return true;
         }
 
         if ($this->id === $user->id) {
+            return true;
+        }
+
+        if ($this->company_id !== null && $this->company_id === $user->company_id) {
             return true;
         }
 

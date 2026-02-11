@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Company;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -41,6 +42,20 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    public function withCompany(?int $company = null): static
+    {
+        if (is_null($company)) {
+            $company = Company::factory()
+                ->withTax()
+                ->create()
+                ->pluck('id');
+        }
+
+        return $this->state(fn (array $attributes) => [
+            'company_id' => $company,
         ]);
     }
 }

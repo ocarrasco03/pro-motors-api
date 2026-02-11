@@ -29,11 +29,7 @@ class UserProfileResource extends JsonResource
                 'company',
                 fn () => new CompanyUserResource($this->company)
             ),
-            'role' => $this->whenLoaded(
-                'roles',
-                fn () => $this->roles->first()?->name
-            ),
-            'permissions' => $this->all_permissions->pluck('name')->values(),
+            z
         ];
     }
 }
