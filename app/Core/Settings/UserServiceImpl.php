@@ -9,6 +9,7 @@ use App\Http\Resources\Settings\UserResource;
 use App\Models\Company;
 use App\Models\User;
 use Exception;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -280,6 +281,10 @@ class UserServiceImpl implements UserService
     protected function resolveCompany(int|string $company): int
     {
         if (is_numeric($company)) {
+            if (! Company::where('id', $company)->exists()) {
+                throw new ModelNotFoundException("Company with ID {$company} does not exist.");
+            }
+
             return (int) $company;
         }
 
