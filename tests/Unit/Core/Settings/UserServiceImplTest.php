@@ -2,10 +2,9 @@
 
 namespace Tests\Unit\Core\Settings;
 
-
-use App\Core\DTO\Common\SearchDTO;
-use App\Core\Enums\RolesEnum;
-use App\Core\Settings\UserServiceImpl;
+use App\Application\DTOs\Common\SearchDTO;
+use App\Application\Services\User\UserServiceImpl;
+use App\Domain\ValueObjects\Enums\RolesEnum;
 use App\Http\Resources\Settings\UserCollection;
 use App\Http\Resources\Settings\UserResource;
 use App\Models\Company;
@@ -25,6 +24,7 @@ use Spatie\Permission\Exceptions\RoleDoesNotExist;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
+use Throwable;
 
 class UserServiceImplTest extends TestCase
 {

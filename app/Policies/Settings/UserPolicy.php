@@ -2,7 +2,7 @@
 
 namespace App\Policies\Settings;
 
-use App\Core\Enums\PermissionsEnum;
+use App\Domain\ValueObjects\Enums\PermissionsEnum;
 use App\Models\User;
 
 class UserPolicy

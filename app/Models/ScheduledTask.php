@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use App\Core\Traits\Blamable;
+use App\Support\Traits\Blamable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;

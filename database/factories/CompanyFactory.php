@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Core\Enums\StatusEnum;
+use App\Domain\ValueObjects\Enums\StatusEnum;
 use App\Models\Tax;
 use Illuminate\Database\Eloquent\Factories\Factory;
 

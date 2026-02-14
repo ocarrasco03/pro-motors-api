@@ -2,7 +2,7 @@
 
 namespace App\Listeners;
 
-use App\Core\Enums\StatusEnum;
+use App\Domain\ValueObjects\Enums\StatusEnum;
 use App\Events\SubscriptionExpired;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;

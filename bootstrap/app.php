@@ -22,6 +22,7 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \App\Http\Middleware\ForceJsonResponse::class,
+            \App\Infrastructure\Authentication\Sanctum\Middleware\EnsureTokenIsValid::class,
             \App\Http\Middleware\CheckTokenExpiration::class,
         ]);
     })

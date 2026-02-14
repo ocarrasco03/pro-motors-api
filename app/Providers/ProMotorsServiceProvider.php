@@ -2,18 +2,16 @@
 
 namespace App\Providers;
 
-use App\Core\Auth\AuthServiceImpl;
-use App\Core\Auth\AuthService;
-use App\Core\Auth\TokenServiceImpl;
-use App\Core\Auth\TokenService;
-use App\Core\Catalogs\ProductService;
-use App\Core\Catalogs\ProductServiceImpl;
-use App\Core\Settings\CompanyService;
-use App\Core\Settings\CompanyServiceImpl;
-use App\Core\Settings\UserService;
-use App\Core\Settings\UserServiceImpl;
-use App\Core\Subscriptions\SubscriptionService;
-use App\Core\Subscriptions\SubscriptionServiceImpl;
+use App\Application\Services\Auth\AuthService;
+use App\Application\Services\Auth\AuthServiceImpl;
+use App\Application\Services\Auth\TokenService;
+use App\Application\Services\Auth\TokenServiceImpl;
+use App\Application\Services\Company\CompanyService;
+use App\Application\Services\Company\CompanyServiceImpl;
+use App\Application\Services\Subscriptions\SubscriptionService;
+use App\Application\Services\Subscriptions\SubscriptionServiceImpl;
+use App\Application\Services\User\UserService;
+use App\Application\Services\User\UserServiceImpl;
 use Illuminate\Support\ServiceProvider;
 
 class ProMotorsServiceProvider extends ServiceProvider
@@ -29,7 +27,7 @@ class ProMotorsServiceProvider extends ServiceProvider
             AuthService::class  => AuthServiceImpl::class,
 
             // Catalogs services
-            ProductService::class => ProductServiceImpl::class,
+            //ProductService::class => ProductServiceImpl::class,
 
             // Settings services
             CompanyService::class => CompanyServiceImpl::class,

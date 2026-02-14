@@ -2,11 +2,9 @@
 
 namespace Tests\Feature\Settings;
 
-use App\Core\Enums\PermissionsEnum;
-use App\Core\Enums\RolesEnum;
+use App\Domain\ValueObjects\Enums\RolesEnum;
 use App\Models\Company;
 use App\Models\User;
-use Database\Seeders\BootRolesPermissionsSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Laravel\Sanctum\Sanctum;

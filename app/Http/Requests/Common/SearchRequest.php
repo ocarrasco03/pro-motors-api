@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests\Common;
 
-use App\Core\DTO\Common\SearchDTO;
+use App\Application\DTOs\Common\SearchDTO;
 use Illuminate\Foundation\Http\FormRequest;
 
 class SearchRequest extends FormRequest

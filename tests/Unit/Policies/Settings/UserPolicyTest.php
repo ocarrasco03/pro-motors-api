@@ -2,13 +2,12 @@
 
 namespace Tests\Unit\Policies\Settings;
 
-use App\Core\Enums\PermissionsEnum;
-use App\Core\Enums\RolesEnum;
+use App\Domain\ValueObjects\Enums\PermissionsEnum;
 use App\Models\Company;
 use App\Models\User;
 use App\Policies\Settings\UserPolicy;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
+use Mockery;
 use Tests\TestCase;
 
 class UserPolicyTest extends TestCase

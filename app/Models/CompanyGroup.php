@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use App\Core\Enums\StatusEnum;
-use App\Core\Traits\Blamable;
+use App\Domain\ValueObjects\Enums\StatusEnum;
+use App\Models\Company;
+use App\Support\Traits\Blamable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;

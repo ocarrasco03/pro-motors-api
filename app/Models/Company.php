@@ -2,20 +2,19 @@
 
 namespace App\Models;
 
-use App\Core\Enums\BillingPeriodEnum;
-use App\Core\Enums\LicenseEnum;
-use App\Core\Enums\RolesEnum;
-use App\Core\Enums\StatusEnum;
-use App\Core\Traits\Blamable;
-use App\Core\Traits\HasSlug;
-use App\Core\Traits\Slug\SlugOptions;
+use App\Domain\ValueObjects\Enums\BillingPeriodEnum;
+use App\Domain\ValueObjects\Enums\LicenseEnum;
+use App\Domain\ValueObjects\Enums\RolesEnum;
+use App\Domain\ValueObjects\Enums\StatusEnum;
 use App\Models\CompanyGroup;
 use App\Models\Tax;
 use App\Models\User;
+use App\Support\Traits\Blamable;
+use App\Support\Traits\HasSlug;
+use App\Support\Traits\Slug\SlugOptions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 

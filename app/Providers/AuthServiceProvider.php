@@ -2,7 +2,7 @@
 
 namespace App\Providers;
 
-use App\Core\Enums\RolesEnum;
+use App\Domain\ValueObjects\Enums\RolesEnum;
 use App\Models\Company;
 use App\Models\User;
 use App\Policies\Settings\CompanyPolicy;

@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
-use App\Core\Enums\RolesEnum;
+use App\Domain\ValueObjects\Enums\RolesEnum;
 use App\Models\Company;
 use App\Models\User;
+use Database\Seeders\BootTaxSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 

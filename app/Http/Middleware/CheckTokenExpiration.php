@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Core\Auth\TokenService;
+use App\Application\Services\Auth\TokenService;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Http\Request;

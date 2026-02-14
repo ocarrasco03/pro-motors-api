@@ -3,8 +3,9 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use App\Core\Enums\RolesEnum;
-use App\Core\Traits\Blamable;
+use App\Domain\ValueObjects\Enums\RolesEnum;
+use App\Models\Company;
+use App\Support\Traits\Blamable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

@@ -2,8 +2,8 @@
 
 namespace App\Providers;
 
-use App\Core\Scout\Configurators\UserIndexConfigurator;
-use App\Core\Scout\Support\MeilisearchConfigurator;
+use App\Infrastructure\Search\Meilisearch\Configurators\UserIndexConfigurator;
+use App\Infrastructure\Search\Meilisearch\Support\MeilisearchConfigurator;
 use App\Models\Company;
 use App\Models\User;
 use App\Observers\CompanyObserver;

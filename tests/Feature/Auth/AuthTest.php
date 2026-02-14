@@ -3,10 +3,7 @@
 namespace Tests\Feature\Auth;
 
 use App\Models\Company;
-use App\Models\Tax;
 use App\Models\User;
-use Database\Seeders\BootRolesPermissionsSeeder;
-use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;

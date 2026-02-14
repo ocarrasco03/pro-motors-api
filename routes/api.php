@@ -1,10 +1,11 @@
 <?php
 
-use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Settings\CompanyController;
-use App\Http\Controllers\Settings\UserController;
+use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\Settings\CompanyController;
+use App\Http\Controllers\Api\V1\Settings\UserController;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+
 
 Route::fallback(function () {
     throw new NotFoundHttpException;
