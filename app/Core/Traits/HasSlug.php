@@ -263,7 +263,7 @@ trait HasSlug
             $additionalQuery($query);
         }
 
-        return $query->first($columns);
+        return $query->firstOrFail($columns);
     }
 
     public static function scopeGetBySlug(Builder $query, string $slug): Builder

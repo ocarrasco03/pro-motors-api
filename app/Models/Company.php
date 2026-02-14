@@ -4,16 +4,20 @@ namespace App\Models;
 
 use App\Core\Enums\BillingPeriodEnum;
 use App\Core\Enums\LicenseEnum;
+use App\Core\Enums\RolesEnum;
 use App\Core\Enums\StatusEnum;
 use App\Core\Traits\Blamable;
 use App\Core\Traits\HasSlug;
 use App\Core\Traits\Slug\SlugOptions;
+use App\Models\CompanyGroup;
+use App\Models\Tax;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use PhpOffice\PhpSpreadsheet\Calculation\Logical\Boolean;
 
 class Company extends Model
 {
@@ -56,6 +60,7 @@ class Company extends Model
         'updated_by',
         'tax_id',
         'license',
+        'is_protected',
     ];
 
     /**
@@ -78,6 +83,21 @@ class Company extends Model
     public function getRouteKeyName(): string
     {
         return 'slug';
+    }
+
+    /**
+     * Retrieve the model for a bound value.
+     *
+     * @param  mixed  $value
+     * @param  string|null  $field
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        if (is_numeric($value)) {
+            return static::findOrFail((int) $value);
+        }
+
+        return static::where('slug', $value)->firstOrFail();
     }
 
     /**
@@ -110,19 +130,27 @@ class Company extends Model
 
     public function scopeAccessibleBy(Builder $query, User $user): Builder
     {
-        return $query->where(function ($q) use ($user) {
-            $q->where('id', $user->company_id)
-                ->orWhere('company_group_id', $user->company->company_group_id);
-        });
+        if ($user->hasRole(RolesEnum::SUPER_ADMIN) && is_null($user->company_id)) {
+            return $query;
+        }
+
+        if (is_null($user->company_id)) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query->where('id', $user->company_id)
+            ->when($user->company->company_group_id, function ($query) use ($user) {
+                $query->orWhere('company_group_id', $user->company->company_group_id);
+            });
     }
 
     public function isAccessibleBy(User $user): bool
     {
-        if ($this->status !== StatusEnum::ACTIVE) {
-            return false;
+        if (is_null($user->company_id) && $user->hasRole(RolesEnum::SUPER_ADMIN)) {
+            return true;
         }
 
-        if ($this->id === $user->company_id) {
+        if (!is_null($user->company_id) && $this->id === $user->company_id) {
             return true;
         }
 
@@ -148,5 +176,10 @@ class Company extends Model
         }
 
         return false;
+    }
+
+    public function isActive(): bool
+    {
+        return $this->status === StatusEnum::ACTIVE;
     }
 }

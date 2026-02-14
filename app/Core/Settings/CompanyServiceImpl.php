@@ -2,61 +2,89 @@
 
 namespace App\Core\Settings;
 
+use App\Core\DTO\Common\SearchDTO;
 use App\Core\Enums\StatusEnum;
+use App\Core\Settings\CompanyService;
+use App\Http\Resources\Settings\CompanyCollection;
+use App\Http\Resources\Settings\CompanyResource;
 use App\Models\Company;
+use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 class CompanyServiceImpl implements CompanyService
 {
+    protected ?User $authUser = null;
+
+    protected function authUser(): User
+    {
+        if ($this->authUser === null) {
+            $this->authUser = auth()->user();
+
+            if (! $this->authUser) {
+                throw new \RuntimeException('Authenticated user is required.');
+            }
+        }
+
+        return $this->authUser;
+    }
+
     /**
      * Retrieves the list of all companies.
      *
      * @return array List of companies. Each element represents a company
      *               with its basic information.
      */
-    public function getCompanies(): array
+    public function getCompanies(SearchDTO $searchDTO): CompanyCollection
     {
-        try {
-            return Company::select(
-                'id', 'name', 'email', 'slug', 'owner_name', 'phone', 'company_group_id',
-                'license', 'status', 'billing_period', 'created_by', 'updated_by', 'updated_at')
-                ->with(['companyGroup' => function ($query) {
-                    $query->select('name');
-                }])
-                ->get()
-                ->toArray();
-            // ->paginate(20);
-        } catch (ModelNotFoundException $exception) {
-            throw new ModelNotFoundException('No companies available');
+        $perPage = $searchDTO->perPage ?? 10;
+        $sortBy = $searchDTO->sortBy ?? 'id';
+        $orderBy = $searchDTO->orderBy ?? 'asc';
+        $filterBy = $searchDTO->filterBy ?? [];
+        $search = $searchDTO->search ?? '';
+
+        if ($search && method_exists(Company::class, 'search')) {
+            return new CompanyCollection(
+                Company::search($search, function ($engine, $query, $options) {
+                    if ($this->authUser()) {
+                        $options['filter'] = 'company_id = ' . $this->authUser()->company_id;
+                    }
+                    return $engine->search($query, $options);
+                })->paginate($perPage)
+            );
         }
+
+        $query = Company::query()
+            ->accessibleBy($this->authUser())
+            ->with(['companyGroup:id,name', 'tax:id,name'])
+            ->orderBy($sortBy, $orderBy);
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%')
+                    ->orWhere('owner_name', 'like', '%' . $search . '%')
+                    ->orWhere('rfc', 'like', '%' . $search . '%');
+            });
+        }
+
+        return new CompanyCollection($query->paginate($perPage));
     }
 
     /**
      * Retrieves detailed information for a specific company.
      *
-     * @param  int|string  $company  Unique identifier or slug of the company.
+     * @param  Company  $company  The company model instance.
      * @return array Detailed company information.
      *
      * @throws \InvalidArgumentException If the provided ID is not valid.
      */
-    public function getCompany(int|string $company): array
+    public function getCompany(Company $company): CompanyResource | array
     {
         try {
-            $query = Company::select($this->selectFields())
-                ->with(['companyGroup', 'tax']);
-
-            if (is_numeric($company)) {
-                return $query
-                    ->findOrFail((int) $company)
-                    ->toArray();
-            }
-
-            return Company::findBySlug(
-                $company,
-                $this->selectFields(),
-                fn ($query) => $query->with('companyGroup', 'tax'))
-                ->toArray();
+            return new CompanyResource(
+                $company->refresh()->loadMissing(['companyGroup', 'tax'])
+            );
 
         } catch (ModelNotFoundException $exception) {
             throw new ModelNotFoundException('Company not found');
@@ -169,9 +197,9 @@ class CompanyServiceImpl implements CompanyService
      */
     public function isCompanyActive(int $companyId): bool
     {
-        $company = Company::find($companyId)->pluck('status');
+        $company = Company::findOrFail($companyId);
 
-        return $company->status === StatusEnum::ACTIVE;
+        return $company->isActive();
     }
 
     /**

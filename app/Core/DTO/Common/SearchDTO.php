@@ -3,7 +3,6 @@
 namespace App\Core\DTO\Common;
 
 use App\Models\User;
-use function Laravel\Prompts\search;
 
 final readonly class SearchDTO
 {

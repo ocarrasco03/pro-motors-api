@@ -63,7 +63,7 @@ class UserPolicy
      */
     public function restore(User $user, User $model): bool
     {
-        return $user->can(PermissionsEnum::RESTORE_USER->value);
+        return $user->can(PermissionsEnum::RESTORE_USER);
     }
 
     /**
@@ -71,6 +71,6 @@ class UserPolicy
      */
     public function forceDelete(User $user, User $model): bool
     {
-        return $user->can(PermissionsEnum::FORCE_DELETE_USER->value);
+        return $user->can(PermissionsEnum::FORCE_DELETE_USER);
     }
 }

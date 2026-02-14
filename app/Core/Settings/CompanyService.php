@@ -2,6 +2,11 @@
 
 namespace App\Core\Settings;
 
+use App\Core\DTO\Common\SearchDTO;
+use App\Http\Resources\Settings\CompanyCollection;
+use App\Http\Resources\Settings\CompanyResource;
+use App\Models\Company;
+
 /**
  * Interface CompanyService
  *
@@ -27,18 +32,18 @@ interface CompanyService
      * @return array List of companies. Each element represents a company
      *               with its basic information.
      */
-    public function getCompanies(): array;
+    public function getCompanies(SearchDTO $searchDTO): CompanyCollection;
 
     /**
      * Retrieves detailed information for a specific company.
      *
-     * @param int|string $company Unique identifier or slug of the company.
+     * @param Company $company The company model instance.
      *
      * @return array Detailed company information.
      *
      * @throws \InvalidArgumentException If the provided ID is not valid.
      */
-    public function getCompany(int|string $company): array;
+    public function getCompany(Company $company): CompanyResource | array;
 
     /**
      * Updates an existing company's information.

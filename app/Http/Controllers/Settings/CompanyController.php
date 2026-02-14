@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Core\Settings\CompanyService;
-use App\Core\Traits\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Common\SearchRequest;
 use App\Http\Requests\Settings\CompanyRequest;
 use App\Http\Requests\Settings\CompanyUpdateRequest;
 use App\Models\Company;
@@ -18,9 +18,9 @@ class CompanyController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(SearchRequest $request)
     {
-        return $this->success($this->companyService->getCompanies());
+        return $this->success($this->companyService->getCompanies($request->toDTO()));
     }
 
     /**
@@ -34,7 +34,7 @@ class CompanyController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(int|string $company)
+    public function show(Company $company)
     {
         return $this->success($this->companyService->getCompany($company));
     }

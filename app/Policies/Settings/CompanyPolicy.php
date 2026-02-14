@@ -5,7 +5,6 @@ namespace App\Policies\Settings;
 use App\Core\Enums\PermissionsEnum;
 use App\Models\Company;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class CompanyPolicy
 {
@@ -14,7 +13,7 @@ class CompanyPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->can(PermissionsEnum::MANAGE_COMPANIES->value);
+        return $user->can(PermissionsEnum::MANAGE_COMPANIES);
     }
 
     /**
@@ -22,7 +21,7 @@ class CompanyPolicy
      */
     public function view(User $user, Company $company): bool
     {
-        return $user->can(PermissionsEnum::VIEW_COMPANY->value, $company)
+        return $user->can(PermissionsEnum::VIEW_COMPANY)
             && $company->isAccessibleBy($user);
     }
 
@@ -31,7 +30,7 @@ class CompanyPolicy
      */
     public function create(User $user): bool
     {
-        return $user->can(PermissionsEnum::CREATE_COMPANY->value);
+        return $user->can(PermissionsEnum::CREATE_COMPANY);
     }
 
     /**
@@ -39,7 +38,7 @@ class CompanyPolicy
      */
     public function update(User $user, Company $company): bool
     {
-        return $user->can(PermissionsEnum::EDIT_COMPANY->value, $company)
+        return $user->can(PermissionsEnum::EDIT_COMPANY)
             && $company->isEditableBy($user);
     }
 
@@ -48,7 +47,7 @@ class CompanyPolicy
      */
     public function delete(User $user, Company $company): bool
     {
-        return $user->can(PermissionsEnum::DELETE_COMPANY->value, $company)
+        return $user->can(PermissionsEnum::DELETE_COMPANY, $company)
             && ! $company->is_protected;
     }
 
@@ -57,7 +56,7 @@ class CompanyPolicy
      */
     public function restore(User $user, Company $company): bool
     {
-        return $user->can(PermissionsEnum::RESTORE_COMPANY->value, $company);
+        return $user->can(PermissionsEnum::RESTORE_COMPANY, $company);
     }
 
     /**
@@ -65,6 +64,6 @@ class CompanyPolicy
      */
     public function forceDelete(User $user, Company $company): bool
     {
-        return $user->can(PermissionsEnum::FORCE_DELETE_COMPANY->value, $company);
+        return $user->can(PermissionsEnum::FORCE_DELETE_COMPANY, $company);
     }
 }

@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Settings;
 
-use App\Core\Enums\PermissionsEnum;
 use App\Core\Settings\UserService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Common\SearchRequest;
@@ -55,9 +54,9 @@ class UserController extends Controller
      *
      * @return \Illuminate\Http\JsonResponse
      */
-    public function changePassword(ChangeUserPasswordRequest $request, string $id)
+    public function changePassword(ChangeUserPasswordRequest $request, User $user)
     {
-        if ($this->userService->resetPassword($id, $request->validated())) {
+        if ($this->userService->resetPassword($user, $request->validated())) {
             return $this->success();
         }
 
