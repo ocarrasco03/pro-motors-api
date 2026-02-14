@@ -12,6 +12,7 @@
 /.vscode
 /.zed
 /.junie
+/.qodo
 /auth.json
 /node_modules
 /public/build
