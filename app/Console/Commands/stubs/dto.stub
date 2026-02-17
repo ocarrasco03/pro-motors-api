@@ -5,13 +5,20 @@ namespace {{ namespace }};
 final readonly class {{ class }}
 {
     public function __construct(
-        public int $example;
+        public int $example
     ) {}
 
-    public static function fromRequest(): self
+    public static function fromArray(array $data): self
     {
         return new self(
-            example: request->get('example')
+            example: $data['example']
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'example' => $this->example
+        ];
     }
 }

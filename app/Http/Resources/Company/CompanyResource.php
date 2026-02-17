@@ -1,9 +1,8 @@
 <?php
 
-namespace App\Http\Resources\Settings;
+namespace App\Http\Resources\Company;
 
 use App\Http\Resources\Settings\CompanyGroupResource;
-use App\Http\Resources\Settings\TaxResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -20,19 +19,28 @@ class CompanyResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'slug' => $this->slug,
+            'email' => $this->email,
+            'ownerName' => $this->owner_name,
+            'phone' => $this->phone,
+            'address' => $this->address,
+            'city' => $this->city,
+            'state' => $this->state,
+            'zipCode' => $this->zip_code,
+            'country' => $this->country,
+            'rfc' => $this->rfc,
             'companyGroup' => $this->whenLoaded(
                 'companyGroup',
                 fn () => new CompanyGroupResource($this->companyGroup)
             ),
             'tax' => $this->whenLoaded(
                 'tax',
-                fn () => new TaxResource($this->tax)
+                fn () => new CompanyTaxResource($this->tax)
             ),
             'price_list' => null,
-            'rfc' => $this->rfc,
             'license' => $this->license,
             'status' => $this->status,
             'billingPeriod' => $this->billing_period,
+            'usersAssigned' => $this->users->count(),
             'createdAt' => $this->created_at,
             'updatedAt' => $this->updated_at,
             'updatedBy' => $this->updated_by,

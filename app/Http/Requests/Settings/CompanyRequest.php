@@ -44,4 +44,19 @@ class CompanyRequest extends FormRequest
             'taxId' => ['required', 'sometimes', 'numeric:strict', 'exists:taxes,id'],
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'name.required' => 'Company name is required.',
+            'name.string' => 'Company name must be a string.',
+            'name.max' => 'Company name must not exceed 255 characters.',
+            'name.unique' => 'Company name must be unique.',
+            'email.required' => 'Email is required.',
+            'email.email' => 'Email must be a valid email address.',
+            'email.string' => 'Email must be a string.',
+            'email.max' => 'Email must not exceed 255 characters.',
+            // Add more custom messages as needed
+        ];
+    }
 }

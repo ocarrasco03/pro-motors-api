@@ -2,15 +2,22 @@
 
 namespace App\Http\Controllers\Api\V1\Settings;
 
+use App\Application\DTOs\Common\SearchDTO;
+use App\Application\DTOs\Company\CreateCompanyDTO;
+use App\Application\DTOs\Company\UpdateCompanyDTO;
 use App\Application\Services\Company\CompanyService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Common\SearchRequest;
 use App\Http\Requests\Settings\CompanyRequest;
 use App\Http\Requests\Settings\CompanyUpdateRequest;
+use App\Http\Resources\Company\CompanyCollection;
+use App\Http\Resources\Company\CompanyResource;
 use App\Models\Company;
 
 class CompanyController extends Controller
 {
+    protected $dto;
+
     public function __construct(protected CompanyService $companyService) {
         $this->authorizeResource(Company::class, 'company');
     }
@@ -20,7 +27,10 @@ class CompanyController extends Controller
      */
     public function index(SearchRequest $request)
     {
-        return $this->success($this->companyService->getCompanies($request->toDTO()));
+        $this->dto = SearchDTO::fromArray($request->validated());
+        $companies = $this->companyService->getAll($this->dto);
+
+        return $this->success(new CompanyCollection($companies));
     }
 
     /**
@@ -28,7 +38,10 @@ class CompanyController extends Controller
      */
     public function store(CompanyRequest $request)
     {
-        return $this->success($this->companyService->createCompany($request->validated()));
+        $this->dto = CreateCompanyDTO::fromArray($request->validated());
+        $company = $this->companyService->create($this->dto);
+
+        return $this->success(new CompanyResource($company), 'Company has been created.', 201);
     }
 
     /**
@@ -36,34 +49,31 @@ class CompanyController extends Controller
      */
     public function show(Company $company)
     {
-        return $this->success($this->companyService->getCompany($company));
+        $company = $this->companyService->getCompany($company);
+
+        abort_if(!$company, 404, 'Company not found.');
+
+        return $this->success(new CompanyResource($company));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(CompanyUpdateRequest $request, string $id)
+    public function update(CompanyUpdateRequest $request, Company $company)
     {
-        $updated = $this->companyService->updateCompany($id, $request->validated());
+        $this->dto = UpdateCompanyDTO::fromArray($request->validated());
+        $result = $this->companyService->update($company, $this->dto);
 
-        if ($updated) {
-            return $this->success("Company has been updated");
-        } else {
-            return $this->error("Failed to update company");
-        }
+        return new CompanyResource($result);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(int|string $company)
+    public function destroy(Company $company)
     {
-        $deleted = $this->companyService->deleteCompany($company);
+        $this->companyService->delete($company);
 
-        if ($deleted) {
-            return $this->success(null, "Company has been deleted");
-        } else {
-            return $this->error("Failed to delete company");
-        }
+        return $this->success(null, "Company has been deleted", 204);
     }
 }

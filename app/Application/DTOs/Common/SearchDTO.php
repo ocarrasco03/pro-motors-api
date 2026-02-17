@@ -15,4 +15,17 @@ final readonly class SearchDTO
         public ?int    $page,
         public ?array  $filterBy
     ) {}
+
+    public static function fromArray(array $data): self
+    {
+        return new self(
+            search: $data['search'] ?? null,
+            sortBy: $data['sort_by'] ?? 'id',
+            orderBy: $data['order_by'] ?? 'asc',
+            perPage: $data['per_page'] ?? 10,
+            authUser: auth()->user(),
+            page: $data['page'] ?? null,
+            filterBy: $data['filter_by'] ?? null
+        );
+    }
 }
