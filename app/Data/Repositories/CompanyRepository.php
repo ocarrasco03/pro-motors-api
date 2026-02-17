@@ -37,13 +37,13 @@ final class CompanyRepository implements CompanyRepositoryInterface
                     $options['filter'] = 'company_id = ' . $user->company_id;
                     return $engine->search($query, $options);
                 })
-                ->with(['companyGroup:id,name', 'tax:id,name'])
+                ->with(['companyGroup:id,name', 'tax:id,name,type,rate'])
                 ->paginate($perPage);
         }
 
         $query = Company::query()
             ->accessibleBy($user)
-            ->with(['companyGroup:id,name', 'tax:id,name'])
+            ->with(['companyGroup:id,name', 'tax:id,name,type,rate'])
             ->orderBy($sortBy, $orderBy);
 
         if ($search) {

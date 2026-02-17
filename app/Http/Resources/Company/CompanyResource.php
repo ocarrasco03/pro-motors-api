@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources\Company;
 
-use App\Http\Resources\Settings\CompanyGroupResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -30,11 +29,18 @@ class CompanyResource extends JsonResource
             'rfc' => $this->rfc,
             'companyGroup' => $this->whenLoaded(
                 'companyGroup',
-                fn () => new CompanyGroupResource($this->companyGroup)
+                fn () => [
+                    'id' => $this->companyGroup?->id,
+                    'name' => $this->companyGroup?->name,
+                ]
             ),
             'tax' => $this->whenLoaded(
                 'tax',
-                fn () => new CompanyTaxResource($this->tax)
+                fn () => [
+                    'name' => $this->tax?->name,
+                    'type' => $this->tax?->type,
+                    'rate' => $this->tax?->rate,
+                ]
             ),
             'price_list' => null,
             'license' => $this->license,
