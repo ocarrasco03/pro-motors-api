@@ -20,12 +20,25 @@ final readonly class SearchDTO
     {
         return new self(
             search: $data['search'] ?? null,
-            sortBy: $data['sort_by'] ?? 'id',
-            orderBy: $data['order_by'] ?? 'asc',
-            perPage: $data['per_page'] ?? 10,
+            sortBy: $data['sortBy'] ?? 'id',
+            orderBy: $data['orderBy'] ?? 'asc',
+            perPage: $data['perPage'] ?? 10,
             authUser: auth()->user(),
             page: $data['page'] ?? null,
-            filterBy: $data['filter_by'] ?? null
+            filterBy: $data['filterBy'] ?? null
         );
+    }
+
+    public function toArray(): array
+    {
+        return [
+            'search' => $this->search,
+            'sort_by' => $this->sortBy,
+            'order_by' => $this->orderBy,
+            'per_page' => $this->perPage,
+            'auth_user' => $this->authUser,
+            'page' => $this->page,
+            'filter_by' => $this->filterBy
+        ];
     }
 }

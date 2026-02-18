@@ -64,7 +64,7 @@ class CompanyController extends Controller
         $this->dto = UpdateCompanyDTO::fromArray($request->validated());
         $result = $this->companyService->update($company, $this->dto);
 
-        return new CompanyResource($result);
+        return $this->success(new CompanyResource($result), 'Company updated successfully.');
     }
 
     /**

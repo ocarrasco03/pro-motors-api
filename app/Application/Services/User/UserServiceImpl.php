@@ -3,171 +3,72 @@
 namespace App\Application\Services\User;
 
 use App\Application\DTOs\Common\SearchDTO;
+use App\Application\DTOs\User\StoreUserDTO;
+use App\Application\DTOs\User\UpdateUserDTO;
 use App\Application\Services\User\UserService;
-use App\Http\Resources\Settings\UserCollection;
-use App\Http\Resources\Settings\UserResource;
+use App\Domain\Interfaces\Repositories\CompanyRepositoryInterface;
+use App\Domain\Interfaces\Repositories\UserRepositoryInterface;
 use App\Models\Company;
 use App\Models\User;
-use Exception;
+use App\Support\Traits\AuthUser;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Role;
 use Throwable;
 
 class UserServiceImpl implements UserService
 {
-    protected ?User $authUser = null;
+    use AuthUser;
 
-    protected function authUser(): User
+    public function __construct(
+        protected UserRepositoryInterface $repository,
+        protected CompanyRepositoryInterface $companyRepository
+    ) {}
+
+    public function getAll(SearchDTO $data): LengthAwarePaginator
     {
-        if ($this->authUser === null) {
-            $this->authUser = auth()->user();
+        $filters = [
+            'per_page' => $data->perPage ?? 10,
+            'sort_by' => $data->sortBy ?? 'id',
+            'order_by' => $data->orderBy ?? 'asc',
+            'search' => $data->search ?? '',
+            'filter_by' => $data->filterBy ?? []
+        ];
 
-            if (! $this->authUser) {
-                throw new \RuntimeException('Authenticated user is required.');
-            }
-        }
-
-        return $this->authUser;
+        return $this->repository->paginateAccesibleBy($this->authUser(), $filters);
     }
 
-    /**
-     * Retrieve all users.
-     */
-    public function getUsers(SearchDTO $data): UserCollection
+    public function getUser(User $user): User
     {
-        $perPage = $data->perPage ?? 10;
-        $sortBy = $data->sortBy ?? 'id';
-        $orderBy = $data->orderBy ?? 'asc';
-        $filterBy = $data->filterBy ?? [];
-        $search = $data->search ?? '';
-
-        if ($search && method_exists(User::class, 'search')) {
-            return new UserCollection(
-                User::search($search, function ($engine, $query, $options) {
-                    $options['filter'] = 'company_id = ' . $this->authUser()->company_id;
-                    return $engine->search($query, $options);
-                })->paginate($perPage)
-            );
-        }
-
-        $query = User::query()
-            ->visibleFor($data->authUser)
-            ->with(['company:id,name,slug', 'roles:name'])
-            ->orderBy($sortBy, $orderBy);
-
-        if ($search) {
-            $query->where(function ($q) use ($search) {
-                $q->where('first_name', 'like', "%{$search}%")
-                    ->orWhere('last_name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%")
-                    ->orWhere('username', 'like', "%{$search}%");
-            });
-        }
-
-        return new UserCollection(
-            $query->paginate($perPage)
-        );
+        return $user->refresh()->loadMissing(['roles', 'permissions', 'company']);
     }
 
-    /**
-     * Retrieve a single user by ID.
-     */
-    public function getUser(User $user): UserResource
+    public function create(StoreUserDTO $data): User
     {
-        return new UserResource($user->refresh()->load(['roles', 'permissions', 'company']));
+        return $this->repository->create($data->toArray());
     }
 
-    /**
-     * Create a new user.
-     * @throws Throwable
-     */
-    public function createUser(array $data): UserResource
+    public function update(User $user, UpdateUserDTO $data): User
     {
-        try{
-            DB::beginTransaction();
-
-            $data['password'] = Hash::make($data['password']);
-
-            if (! is_null($this->authUser()->company_id)) {
-                $data['company_id'] = $this->authUser()->company_id;
-                unset($data['company']);
-            } elseif (array_key_exists('company', $data)) {
-                $data['company_id'] = $this->resolveCompany($data['company']);
-            }
-
-            $user = User::create($data);
-
-            $this->assignRole($user, $data['role']);
-
-            DB::commit();
-        } catch (Exception $exception) {
-            DB::rollBack();
-
-            Log::error($exception->getMessage());
-            throw new Exception($exception->getMessage());
-        }
-
-        return new UserResource(
-            $user
-                ->refresh()
-                ->load(['roles', 'company'])
-        );
+        return $this->repository->update($user, $data->toArray());
     }
 
-    /**
-     * Update an existing user.
-     * @throws Exception|Throwable
-     */
-    public function updateUser(User $user, array $data): UserResource
+    public function delete(User $user): bool
     {
-        try {
-            DB::beginTransaction();
-
-            if (isset($data['company_id']) || isset($data['company'])) {
-                if (! is_null($this->authUser()->company_id)) {
-                    $data['company_id'] = $this->authUser()->company_id;
-                    unset($data['company']);
-                } elseif (array_key_exists('company', $data)) {
-                    $data['company_id'] = $this->resolveCompany($data['company']);
-                }
-            }
-
-            $user->update($data);
-
-            if (isset($data['role'])) {
-                $this->assignRole($user, $data['role']);
-            }
-
-            DB::commit();
-        } catch (Throwable|Exception $exception) {
-            DB::rollBack();
-            Log::error($exception->getMessage());
-            throw new Exception($exception->getMessage());
-        }
-
-        return new UserResource($user->refresh()->load(['roles', 'company']));
+        return $this->repository->delete($user);
     }
 
-    /**
-     * Soft delete a user.
-     */
-    public function deleteUser(User $user): bool
+    public function restore(int $id): bool
     {
-        return (bool) $user->delete();
+        return $this->repository->restore($id);
     }
 
-    /**
-     * Restore a soft-deleted user.
-     */
-    public function restoreUser(int $id): bool
+    public function forceDelete(User $user): bool
     {
-        $user = User::withTrashed()->findOrFail($id);
-
-        return (bool) $user->restore();
+        return $this->repository->forceDelete($user);
     }
 
     /**
@@ -180,17 +81,6 @@ class UserServiceImpl implements UserService
         return $user->save();
     }
 
-    /**
-     * Determine whether a user is active.
-     */
-    public function isUserActive(User $user): bool
-    {
-        return (bool) $user->active;
-    }
-
-    /**
-     * Enable or disable a user.
-     */
     public function enableDisableUser(User $user): bool
     {
         $user->active = ! $user->active;
@@ -198,22 +88,17 @@ class UserServiceImpl implements UserService
         return $user->save();
     }
 
-    /**
-     * Get all users belonging to a company.
-     *
-     * @return Collection<User>
-     */
-    public function getCompanyUsers(int $companyId): Collection
+    public function getCompanyUsers(int $companyId): LengthAwarePaginator
     {
-        return User::where('company_id', $companyId)->get();
+        return $this->repository->findByCompanyId($companyId);
     }
 
     /**
      * Get the company associated with a user.
      */
-    public function getUserCompany(User $user): array
+    public function getUserCompany(User $user): Company
     {
-        return $user->company ? $user->company->toArray() : [];
+        return $this->companyRepository->findById($user->company_id);
     }
 
     /**
@@ -241,9 +126,9 @@ class UserServiceImpl implements UserService
     /**
      * Remove a role from a user.
      */
-    public function removeRole(User $user, array $data): void
+    public function removeRole(User $user, string $role): void
     {
-        $user->removeRole($data['role']);
+        $user->removeRole($role);
     }
 
     /**
@@ -251,7 +136,7 @@ class UserServiceImpl implements UserService
      */
     public function getRoles(User $user): Collection
     {
-        return $user->roles;
+        return $user->getRoleNames();
     }
 
     /**

@@ -3,9 +3,11 @@
 namespace App\Application\Services\User;
 
 use App\Application\DTOs\Common\SearchDTO;
-use App\Http\Resources\Settings\UserCollection;
-use App\Http\Resources\Settings\UserResource;
+use App\Application\DTOs\User\StoreUserDTO;
+use App\Application\DTOs\User\UpdateUserDTO;
+use App\Models\Company;
 use App\Models\User;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Spatie\Permission\Models\Role;
 
@@ -18,95 +20,20 @@ use Spatie\Permission\Models\Role;
  */
 interface UserService
 {
-    /**
-     * Retrieve all users.
-     */
-    public function getUsers(SearchDTO $data): UserCollection;
-
-    /**
-     * Retrieve a single user by ID.
-     */
-    public function getUser(User $user): UserResource;
-
-    /**
-     * Create a new user.
-     */
-    public function createUser(array $data): UserResource;
-
-    /**
-     * Update an existing user.
-     */
-    public function updateUser(User $user, array $data): UserResource;
-
-    /**
-     * Soft delete a user.
-     */
-    public function deleteUser(User $user): bool;
-
-    /**
-     * Restore a soft-deleted user.
-     */
-    public function restoreUser(int $id): bool;
-
-    /**
-     * Reset a user's password.
-     */
-    public function resetPassword(User $user, array $data): bool;
-
-    /**
-     * Determine whether a user is active.
-     */
-    public function isUserActive(User $user): bool;
-
-    /**
-     * Enable or disable a user.
-     */
-    public function enableDisableUser(User $user): bool;
-
-    /**
-     * Get all users belonging to a company.
-     *
-     * @return Collection<User>
-     */
-    public function getCompanyUsers(int $companyId): Collection;
-
-    /**
-     * Get the company associated with a user.
-     */
-    public function getUserCompany(User $user): array;
-
-    /**
-     * Get all price lists assigned to a company.
-     */
+    public function getAll(SearchDTO $filters): LengthAwarePaginator;
+    public function getUser(User $user): User;
+    public function create(StoreUserDTO $data): User;
+    public function update(User $user, UpdateUserDTO $data): User;
+    public function delete(User $user): bool;
+    public function restore(int $id): bool;
+    public function forceDelete(User $user): bool;
+    //public function enableDisableUser(User $user): bool;
+    public function getCompanyUsers(int $companyId): LengthAwarePaginator;
+    public function getUserCompany(User $user): Company;
     public function getAssignedPriceLists(int $companyId): array;
-
-    /**
-     * Assign a role to a user.
-     */
     public function assignRole(User $user, string|Role $role): void;
-
-    /**
-     * Remove a role from a user.
-     */
-    public function removeRole(User $user, array $data): void;
-
-    /**
-     * Get roles assigned to a user.
-     */
     public function getRoles(User $user): Collection;
-
-    /**
-     * Assign a permission to a user.
-     */
     public function assignPermission(User $user, array $data): void;
-
-    /**
-     * Remove a permission from a user.
-     */
     public function removePermission(User $user, array $data): void;
-
-    /**
-     * Get permissions assigned directly to a user.
-     */
     public function getPermissions(User $user): Collection;
 }
