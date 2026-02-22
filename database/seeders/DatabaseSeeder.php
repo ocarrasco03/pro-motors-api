@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
         if (config('app.env') !== 'production') {
 
             $company = Company::factory()
-                ->withTax()
+                ->withTax(1)
                 ->active()
                 ->create();
 
@@ -60,7 +60,7 @@ class DatabaseSeeder extends Seeder
             $user->assignRole(RolesEnum::USER);
 
             User::factory(25)->withCompany($company->id)->create();
-            Company::factory(10)->withTax()->create();
+            Company::factory(10)->withTax(1)->create();
         }
     }
 }
