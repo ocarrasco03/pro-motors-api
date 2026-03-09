@@ -1,11 +1,11 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Auth\AuthController;
+use App\Http\Controllers\Api\V1\Scheduler\ScheduledTaskController;
 use App\Http\Controllers\Api\V1\Settings\CompanyController;
 use App\Http\Controllers\Api\V1\Settings\UserController;
 use Illuminate\Support\Facades\Route;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-
 
 Route::fallback(function () {
     throw new NotFoundHttpException;
@@ -22,6 +22,19 @@ Route::group(['prefix' => 'v1'], function () {
     });
 
     Route::middleware('auth:sanctum')->group(function () {
+        Route::group(['prefix' => 'support'], function () {
+            Route::group(['prefix' => 'scheduler'], function () {
+                Route::group(['prefix' => 'tasks'], function () {
+                    Route::get('/', [ScheduledTaskController::class, 'index']);
+                    Route::post('/', [ScheduledTaskController::class, 'store']);
+                    Route::get('/{scheduledTask}', [ScheduledTaskController::class, 'show']);
+                    Route::put('/{scheduledTask}', [ScheduledTaskController::class, 'update']);
+                    Route::delete('/{scheduledTask}', [ScheduledTaskController::class, 'destroy']);
+                    Route::patch('/{scheduledTask}/toggle', [ScheduledTaskController::class, 'toggle']);
+                });
+            });
+        });
+
         Route::group(['prefix' => 'settings'], function () {
             Route::group(['prefix' => 'companies'], function () {
                 Route::get('/', [CompanyController::class, 'index']);
