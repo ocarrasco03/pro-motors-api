@@ -1,0 +1,156 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: pro-motors-api:latest
+    container_name: pro-motors-api
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:8080
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=pro_motors
+      - DB_USERNAME=root
+      - DB_PASSWORD=${DB_PASSWORD:-secret}
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - QUEUE_CONNECTION=redis
+      - CACHE_STORE=redis
+      - SESSION_DRIVER=redis
+      - SCOUT_DRIVER=meilisearch
+      - MEILISEARCH_HOST=http://meilisearch:7700
+      - MEILISEARCH_KEY=${MEILISEARCH_KEY:-masterKey}
+    volumes:
+      - .:/var/www/html
+      - ./docker/php.ini:/usr/local/etc/php/conf.d/app.ini:ro
+      - ./docker/nginx.conf:/etc/nginx/http.d/default.conf:ro
+    depends_on:
+      - db
+      - redis
+      - meilisearch
+    networks:
+      - pro-motors-network
+
+  queue:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: pro-motors-queue:latest
+    container_name: pro-motors-queue
+    restart: unless-stopped
+    command: php /var/www/html/artisan queue:work redis --sleep=3 --tries=3 --max-time=3600
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=pro_motors
+      - DB_USERNAME=root
+      - DB_PASSWORD=${DB_PASSWORD:-secret}
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - QUEUE_CONNECTION=redis
+      - CACHE_STORE=redis
+      - SCOUT_DRIVER=meilisearch
+      - MEILISEARCH_HOST=http://meilisearch:7700
+      - MEILISEARCH_KEY=${MEILISEARCH_KEY:-masterKey}
+    volumes:
+      - .:/var/www/html
+      - ./docker/php.ini:/usr/local/etc/php/conf.d/app.ini:ro
+    depends_on:
+      - db
+      - redis
+      - meilisearch
+    networks:
+      - pro-motors-network
+
+  scheduler:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: pro-motors-scheduler:latest
+    container_name: pro-motors-scheduler
+    restart: unless-stopped
+    command: sh -c "sleep 5 && php /var/www/html/artisan schedule:work"
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - DB_CONNECTION=pgsql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_DATABASE=pro_motors
+      - DB_USERNAME=root
+      - DB_PASSWORD=${DB_PASSWORD:-secret}
+      - REDIS_HOST=redis
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-}
+      - QUEUE_CONNECTION=redis
+      - CACHE_STORE=redis
+      - SCOUT_DRIVER=meilisearch
+      - MEILISEARCH_HOST=http://meilisearch:7700
+      - MEILISEARCH_KEY=${MEILISEARCH_KEY:-masterKey}
+    volumes:
+      - .:/var/www/html
+      - ./docker/php.ini:/usr/local/etc/php/conf.d/app.ini:ro
+    depends_on:
+      - db
+      - redis
+      - meilisearch
+    networks:
+      - pro-motors-network
+
+  db:
+    image: postgres:16-alpine
+    container_name: pro-motors-db
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-secret}
+      - POSTGRES_DB=pro_motors
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pro-motors-postgres-data:/var/lib/postgresql/data
+    networks:
+      - pro-motors-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: pro-motors-redis
+    restart: unless-stopped
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - pro-motors-redis-data:/data
+    networks:
+      - pro-motors-network
+
+  meilisearch:
+    image: getmeili/meilisearch:v1.12
+    container_name: pro-motors-meilisearch
+    restart: unless-stopped
+    ports:
+      - "${MEILISEARCH_PORT:-7700}:7700"
+    environment:
+      - MEILI_MASTER_KEY=${MEILISEARCH_KEY:-masterKey}
+    volumes:
+      - pro-motors-meilisearch-data:/meili_data
+    networks:
+      - pro-motors-network
+
+networks:
+  pro-motors-network:
+    driver: bridge
+
+volumes:
+  pro-motors-postgres-data:
+  pro-motors-redis-data:
+  pro-motors-meilisearch-data:
