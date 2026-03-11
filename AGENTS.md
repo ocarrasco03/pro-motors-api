@@ -6,6 +6,10 @@ This file provides guidelines for agentic coding agents operating in this Larave
 
 This is a Laravel 12 API backend. The frontend is a separate React/TypeScript project located at `/Users/ocarrasco/Sites/pro-motors-ui`.
 
+## Language
+
+All documentation, code comments, variable names, and commit messages must be in English.
+
 ---
 
 ## Commands
