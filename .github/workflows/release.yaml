@@ -55,7 +55,6 @@ jobs:
       - name: Run Tests with Coverage
         run: php artisan test --coverage --min=80
 
-
   release:
     name: Version & Release
     needs: test
@@ -82,8 +81,8 @@ jobs:
           tag_name: ${{ steps.semver.outputs.new_version }}
           generate_release_notes: true
 
-  deploy:
-    name: Deploy Backend (Railway)
+  deploy-api:
+    name: Deploy API
     needs: release
     runs-on: ubuntu-latest
 
@@ -92,7 +91,67 @@ jobs:
         with:
           ref: ${{ needs.release.outputs.tag }}
 
-      - run: npm install -g @railway/cli
-      - run: railway up --detach
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        run: railway up --project ${{ secrets.RAILWAY_PROJECT_ID }} --service pro-motors-api
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+  deploy-queue:
+    name: Deploy Queue Worker
+    needs: release
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        run: railway up --project ${{ secrets.RAILWAY_PROJECT_ID }} --service pro-motors-queue
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+  deploy-scheduler:
+    name: Deploy Scheduler
+    needs: release
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy to Railway
+        run: railway up --project ${{ secrets.RAILWAY_PROJECT_ID }} --service pro-motors-scheduler
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+  migrate:
+    name: Run Migrations
+    needs: [deploy-api, deploy-queue, deploy-scheduler]
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.release.outputs.tag }}
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Login to Railway
+        run: railway login --token ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Run migrations
+        run: railway run --project ${{ secrets.RAILWAY_PROJECT_ID }} php artisan migrate --force
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

@@ -1,4 +1,5 @@
 .git
+.github
 .gitignore
 .vscode
 .idea
@@ -16,3 +17,5 @@ tests
 .phpunit.cache
 storage/*.key
 composer.lock
+railway/
+helm/
