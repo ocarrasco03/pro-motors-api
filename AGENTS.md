@@ -242,6 +242,45 @@ use App\Support\Traits\Blamable;
 
 ---
 
+## Git Guidelines
+
+### Branch Strategy (Gitflow)
+- **Main branches**: `main` (production), `dev` (integration)
+- **Feature branches**: `feature/TICKET-description` (from `dev`)
+- **Hotfix branches**: `hotfix/TICKET-description` (from `main`)
+- **Release branches**: `release/v1.x.x` (from `dev`)
+
+### Commit Messages (Conventional Commits)
+- Keep commit messages under 50 characters total, prioritize clarity over completeness
+- Format: `type(scope): description`
+- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `perf`, `ci`, `build`
+- Describe what was changed and why, not how it was implemented
+- Example: `fix: resolve login timeout to improve user experience`
+- Write commit subjects in imperative mood (e.g., "Add", "Fix", "Update")
+- Always include the issue number: `type: description (#123)` when relevant
+
+### Stash Messages
+- Include the current feature or task: `WIP: feature-name - specific changes`
+- Start with action verbs: "Adding", "Fixing", "Updating", "Removing", "Refactoring"
+- Format: `[branch-name] brief description of stashed changes`
+
+### Pull Requests
+- Include a "How to Test" section with specific steps to verify the changes
+- Include a "Breaking Changes" section if any exist, clearly explaining impact and migration steps
+- Include a "Review Focus" section highlighting specific areas for reviewers
+
+### Commit Organization
+- Each commit should represent one logical change that could be reverted independently
+- Never mix refactoring, formatting, or cleanup changes with new features or bug fixes
+- Order commits logically so each builds on the previous one (bisect-friendly)
+
+### Explaining Changes
+- Format explanations as bullet points, one per major change or file modified
+- Always mention which components, modules, or areas of the codebase were affected
+- Explain technical concepts in simple terms that junior developers can understand
+
+---
+
 ## Artisan Commands
 
 Always use `--no-interaction` flag:
