@@ -1,0 +1,1 @@
+scheduler: sh -c "sleep 5 && php artisan schedule:work"

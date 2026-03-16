@@ -1,0 +1,100 @@
+global:
+  imageRegistry: &imageRegistry ""
+  imagePullSecrets: []
+  storageClass: ""
+  env:
+    appEnv: local
+    appDebug: "true"
+    appUrl: "http://localhost:8080"
+    logLevel: debug
+    queueConnection: redis
+    cacheStore: redis
+
+image:
+  api: &apiImage pro-motors-api:latest
+  queue: &queueImage pro-motors-queue:latest
+  scheduler: &schedulerImage pro-motors-scheduler:latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  api:
+    port: 80
+    targetPort: 8080
+  annotations: {}
+
+ingress:
+  enabled: false
+
+api:
+  replicaCount: 1
+  autoscaling:
+    enabled: false
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 250m
+      memory: 256Mi
+  podAnnotations: {}
+  podSecurityContext: {}
+  containerSecurityContext:
+    allowPrivilegeEscalation: true
+
+queue:
+  replicaCount: 1
+  command: "php /var/www/html/artisan queue:work redis --sleep=3 --tries=3 --max-time=3600"
+  resources:
+    limits:
+      cpu: 500m
+      memory: 512Mi
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  podAnnotations: {}
+  podSecurityContext: {}
+  containerSecurityContext:
+    allowPrivilegeEscalation: true
+
+scheduler:
+  replicaCount: 1
+  command: "sh -c 'sleep 5 && php artisan schedule:work'"
+  resources:
+    limits:
+      cpu: 250m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+  podAnnotations: {}
+  podSecurityContext: {}
+  containerSecurityContext:
+    allowPrivilegeEscalation: true
+
+database:
+  host: host.docker.internal
+  port: 5432
+  name: pro_motors
+  username: postgres
+  existingSecret: pro-motors-database
+  secretKey: password
+
+redis:
+  host: host.docker.internal
+  port: 6379
+  password: ""
+  existingSecret: pro-motors-redis
+
+meilisearch:
+  host: host.docker.internal
+  port: 7700
+  masterKey: ""
+  scoutDriver: meilisearch
+  existingSecret: super-secret-master-key
+
+persistence:
+  enabled: false
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 1Gi
