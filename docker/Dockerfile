@@ -33,6 +33,7 @@ RUN apk add --no-cache \
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 COPY docker/php.ini /usr/local/etc/php/conf.d/app.ini
+COPY docker/php-fpm.conf /usr/local/etc/php-fpm.d/www.conf
 
 RUN mkdir -p /var/www/html/storage/logs \
     /var/www/html/storage/framework/{sessions,views,cache} \
