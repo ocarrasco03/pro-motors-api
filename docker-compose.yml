@@ -18,7 +18,7 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - DB_DATABASE=pro_motors
-      - DB_USERNAME=root
+      - DB_USERNAME=postgres
       - DB_PASSWORD=${DB_PASSWORD:-secret}
       - REDIS_HOST=redis
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
@@ -54,7 +54,7 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - DB_DATABASE=pro_motors
-      - DB_USERNAME=root
+      - DB_USERNAME=postgres
       - DB_PASSWORD=${DB_PASSWORD:-secret}
       - REDIS_HOST=redis
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
@@ -88,7 +88,7 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - DB_DATABASE=pro_motors
-      - DB_USERNAME=root
+      - DB_USERNAME=postgres
       - DB_PASSWORD=${DB_PASSWORD:-secret}
       - REDIS_HOST=redis
       - REDIS_PASSWORD=${REDIS_PASSWORD:-}
@@ -112,7 +112,7 @@ services:
     container_name: pro-motors-db
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=root
+      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=${DB_PASSWORD:-secret}
       - POSTGRES_DB=pro_motors
     ports:
