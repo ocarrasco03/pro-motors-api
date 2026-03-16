@@ -13,6 +13,9 @@ spec:
       app.kubernetes.io/component: scheduler
   template:
     metadata:
+      labels:
+        {{- include "pro-motors.labels" . | nindent 8 }}
+        app.kubernetes.io/component: scheduler
       annotations:
         {{- toYaml .Values.scheduler.podAnnotations | nindent 8 }}
     spec:

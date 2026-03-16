@@ -13,6 +13,9 @@ spec:
       app.kubernetes.io/component: queue
   template:
     metadata:
+      labels:
+        {{- include "pro-motors.labels" . | nindent 8 }}
+        app.kubernetes.io/component: queue
       annotations:
         {{- toYaml .Values.queue.podAnnotations | nindent 8 }}
     spec:
