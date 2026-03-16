@@ -4,7 +4,7 @@ services:
   api:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: railway/api/Dockerfile
     image: pro-motors-api:latest
     container_name: pro-motors-api
     restart: unless-stopped
@@ -42,7 +42,7 @@ services:
   queue:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: railway/queue/Dockerfile
     image: pro-motors-queue:latest
     container_name: pro-motors-queue
     restart: unless-stopped
@@ -76,7 +76,7 @@ services:
   scheduler:
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: railway/scheduler/Dockerfile
     image: pro-motors-scheduler:latest
     container_name: pro-motors-scheduler
     restart: unless-stopped
