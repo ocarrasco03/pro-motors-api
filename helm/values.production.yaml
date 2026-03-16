@@ -3,10 +3,10 @@ global:
   imagePullSecrets: []
   storageClass: ""
   env:
-    appEnv: local
-    appDebug: "true"
-    appUrl: "http://localhost:8080"
-    logLevel: debug
+    appEnv: production
+    appDebug: "false"
+    appUrl: "https://api.pro-motors.example.com"
+    logLevel: error
     queueConnection: redis
     cacheStore: redis
 
@@ -24,7 +24,20 @@ service:
   annotations: {}
 
 ingress:
-  enabled: false
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: api.pro-motors.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: pro-motors-api-tls
+      hosts:
+        - api.pro-motors.example.com
 
 api:
   replicaCount: 1
@@ -73,7 +86,7 @@ scheduler:
     allowPrivilegeEscalation: true
 
 database:
-  host: host.docker.internal
+  host: postgres.railway
   port: 5432
   name: pro_motors
   username: postgres
@@ -81,17 +94,17 @@ database:
   secretKey: password
 
 redis:
-  host: host.docker.internal
+  host: redis.railway
   port: 6379
   password: ""
   existingSecret: pro-motors-redis
 
 meilisearch:
-  host: host.docker.internal
+  host: meilisearch.railway
   port: 7700
   masterKey: ""
   scoutDriver: meilisearch
-  existingSecret: super-secret-master-key
+  existingSecret: pro-motors-meilisearch
 
 persistence:
   enabled: false
