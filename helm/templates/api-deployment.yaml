@@ -25,6 +25,25 @@ spec:
       {{- end }}
       securityContext:
         {{- toYaml .Values.api.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: init-permissions
+          image: busybox
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              mkdir -p /var/www/html/storage/logs
+              mkdir -p /var/www/html/storage/framework/sessions
+              mkdir -p /var/www/html/storage/framework/views
+              mkdir -p /var/www/html/storage/framework/cache
+              mkdir -p /var/www/html/storage/app/public
+              mkdir -p /var/www/html/bootstrap/cache
+              chmod -R 777 /var/www/html/storage
+              chmod -R 777 /var/www/html/bootstrap
+          volumeMounts:
+            - name: storage
+              mountPath: /var/www/html/storage
+            - name: cache
+              mountPath: /var/www/html/bootstrap/cache
       containers:
         - name: api
           securityContext:
