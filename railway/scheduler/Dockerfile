@@ -27,12 +27,12 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 
 COPY docker/php.ini /usr/local/etc/php/conf.d/app.ini
 
-RUN mkdir -p /var/www/html/storage/{logs,framework/{sessions,views,cache}} /var/www/html/bootstrap/cache
-
 COPY . /var/www/html
 
-RUN chown -R www-data:www-data /var/www/html && chmod -R 755 /var/www/html/storage /var/www/html/bootstrap/cache || true
-
 RUN composer install --no-dev --no-interaction --prefer-dist --classmap-authoritative || true
+
+RUN mkdir -p /var/www/html/storage/{logs,framework/{sessions,views,cache},app/public} /var/www/html/bootstrap/cache && \
+    chown -R www-data:www-data /var/www/html && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache || true
 
 CMD ["sh", "-c", "sleep 5 && php artisan schedule:work"]
