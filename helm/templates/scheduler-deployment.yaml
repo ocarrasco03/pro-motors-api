@@ -128,9 +128,14 @@ spec:
               mountPath: /var/www/html/storage
             - name: cache
               mountPath: /var/www/html/bootstrap/cache
+            - name: env
+              mountPath: /var/www/html/.env
+              subPath: .env
       volumes:
         - name: storage
-          persistentVolumeClaim:
-            claimName: {{ include "pro-motors.fullname" . }}-storage
+          emptyDir: {}
         - name: cache
           emptyDir: {}
+        - name: env
+          secret:
+            secretName: {{ include "pro-motors.fullname" . }}-env
