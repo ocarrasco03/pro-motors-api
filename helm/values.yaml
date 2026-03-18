@@ -4,6 +4,7 @@ global:
   storageClass: ""
   env:
     appEnv: local
+    appKey: base64:heuRJ714K1LjVmaJ3YefIZ49Gq8VYvWeKfXQPIyIg9s=
     appDebug: "true"
     appUrl: "http://localhost:8080"
     logLevel: debug
@@ -77,6 +78,7 @@ database:
   port: 5432
   name: pro_motors
   username: postgres
+  password: root
   existingSecret: pro-motors-database
   secretKey: password
 
@@ -89,7 +91,7 @@ redis:
 meilisearch:
   host: host.docker.internal
   port: 7700
-  masterKey: ""
+  masterKey: super-secret-master-key
   scoutDriver: meilisearch
   existingSecret: pro-motors-meilisearch
 
