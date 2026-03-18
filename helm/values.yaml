@@ -91,7 +91,7 @@ meilisearch:
   port: 7700
   masterKey: ""
   scoutDriver: meilisearch
-  existingSecret: super-secret-master-key
+  existingSecret: pro-motors-meilisearch
 
 persistence:
   enabled: false
