@@ -9,11 +9,11 @@ services:
     container_name: pro-motors-api
     restart: unless-stopped
     ports:
-      - "${APP_PORT:-8080}:8080"
+      - "${APP_PORT:-8000}:8000"
     environment:
       - APP_ENV=local
       - APP_DEBUG=true
-      - APP_URL=http://localhost:8080
+      - APP_URL=http://localhost:8000
       - DB_CONNECTION=pgsql
       - DB_HOST=db
       - DB_PORT=5432
@@ -29,7 +29,7 @@ services:
       - MEILISEARCH_HOST=http://meilisearch:7700
       - MEILISEARCH_KEY=${MEILISEARCH_KEY:-masterKey}
     volumes:
-      - .:/var/www/html
+      - .:/var/www/html:delegated
       - ./docker/php.ini:/usr/local/etc/php/conf.d/app.ini:ro
       - ./docker/nginx.conf:/etc/nginx/http.d/default.conf:ro
     depends_on:
@@ -64,7 +64,7 @@ services:
       - MEILISEARCH_HOST=http://meilisearch:7700
       - MEILISEARCH_KEY=${MEILISEARCH_KEY:-masterKey}
     volumes:
-      - .:/var/www/html
+      - .:/var/www/html:delegated
       - ./docker/php.ini:/usr/local/etc/php/conf.d/app.ini:ro
     depends_on:
       - db
@@ -98,7 +98,7 @@ services:
       - MEILISEARCH_HOST=http://meilisearch:7700
       - MEILISEARCH_KEY=${MEILISEARCH_KEY:-masterKey}
     volumes:
-      - .:/var/www/html
+      - .:/var/www/html:delegated
       - ./docker/php.ini:/usr/local/etc/php/conf.d/app.ini:ro
     depends_on:
       - db
@@ -118,7 +118,7 @@ services:
     ports:
       - "${DB_PORT:-5432}:5432"
     volumes:
-      - pro-motors-postgres-data:/var/lib/postgresql/data
+      - pro-motors-postgres-data:/var/lib/postgresql/data:delegated
     networks:
       - pro-motors-network
 
@@ -129,7 +129,7 @@ services:
     ports:
       - "${REDIS_PORT:-6379}:6379"
     volumes:
-      - pro-motors-redis-data:/data
+      - pro-motors-redis-data:/data:delegated
     networks:
       - pro-motors-network
 
@@ -142,7 +142,7 @@ services:
     environment:
       - MEILI_MASTER_KEY=${MEILISEARCH_KEY:-masterKey}
     volumes:
-      - pro-motors-meilisearch-data:/meili_data
+      - pro-motors-meilisearch-data:/meili_data:delegated
     networks:
       - pro-motors-network
 
