@@ -12,10 +12,10 @@ global:
     cacheStore: redis
 
 image:
-  api: &apiImage pro-motors-api:latest
-  queue: &queueImage pro-motors-queue:latest
-  scheduler: &schedulerImage pro-motors-scheduler:latest
-  pullPolicy: IfNotPresent
+  api: &apiImage docker.io/library/pro-motors-api:latest
+  queue: &queueImage docker.io/library/pro-motors-queue:latest
+  scheduler: &schedulerImage docker.io/library/pro-motors-scheduler:latest
+  pullPolicy: Never
 
 service:
   type: ClusterIP
