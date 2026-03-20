@@ -4,6 +4,7 @@ global:
   storageClass: ""
   env:
     appEnv: local
+    appKey: base64:heuRJ714K1LjVmaJ3YefIZ49Gq8VYvWeKfXQPIyIg9s=
     appDebug: "true"
     appUrl: "http://localhost:8080"
     logLevel: debug
@@ -11,10 +12,10 @@ global:
     cacheStore: redis
 
 image:
-  api: &apiImage pro-motors-api:latest
-  queue: &queueImage pro-motors-queue:latest
-  scheduler: &schedulerImage pro-motors-scheduler:latest
-  pullPolicy: IfNotPresent
+  api: &apiImage docker.io/library/pro-motors-api:latest
+  queue: &queueImage docker.io/library/pro-motors-queue:latest
+  scheduler: &schedulerImage docker.io/library/pro-motors-scheduler:latest
+  pullPolicy: Never
 
 service:
   type: ClusterIP
@@ -77,6 +78,7 @@ database:
   port: 5432
   name: pro_motors
   username: postgres
+  password: root
   existingSecret: pro-motors-database
   secretKey: password
 
@@ -89,9 +91,9 @@ redis:
 meilisearch:
   host: host.docker.internal
   port: 7700
-  masterKey: ""
+  masterKey: super-secret-master-key
   scoutDriver: meilisearch
-  existingSecret: super-secret-master-key
+  existingSecret: pro-motors-meilisearch
 
 persistence:
   enabled: false

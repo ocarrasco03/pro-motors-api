@@ -25,6 +25,25 @@ spec:
       {{- end }}
       securityContext:
         {{- toYaml .Values.queue.podSecurityContext | nindent 8 }}
+      initContainers:
+        - name: init-permissions
+          image: busybox
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              mkdir -p /var/www/html/storage/logs
+              mkdir -p /var/www/html/storage/framework/sessions
+              mkdir -p /var/www/html/storage/framework/views
+              mkdir -p /var/www/html/storage/framework/cache
+              mkdir -p /var/www/html/storage/app/public
+              mkdir -p /var/www/html/bootstrap/cache
+              chmod -R 777 /var/www/html/storage
+              chmod -R 777 /var/www/html/bootstrap
+          volumeMounts:
+            - name: storage
+              mountPath: /var/www/html/storage
+            - name: cache
+              mountPath: /var/www/html/bootstrap/cache
       containers:
         - name: queue
           securityContext:
@@ -35,92 +54,6 @@ spec:
             - sh
             - -c
             - {{ .Values.queue.command }}
-          env:
-            - name: APP_ENV
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "pro-motors.fullname" . }}-config
-                  key: APP_ENV
-            - name: APP_DEBUG
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "pro-motors.fullname" . }}-config
-                  key: APP_DEBUG
-            - name: LOG_LEVEL
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "pro-motors.fullname" . }}-config
-                  key: LOG_LEVEL
-            - name: QUEUE_CONNECTION
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "pro-motors.fullname" . }}-config
-                  key: QUEUE_CONNECTION
-            - name: CACHE_STORE
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "pro-motors.fullname" . }}-config
-                  key: CACHE_STORE
-            - name: SCOUT_DRIVER
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "pro-motors.fullname" . }}-config
-                  key: SCOUT_DRIVER
-            - name: DB_CONNECTION
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "pro-motors.fullname" . }}-config
-                  key: DB_CONNECTION
-            - name: DB_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "pro-motors.fullname" . }}-config
-                  key: DB_HOST
-            - name: DB_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "pro-motors.fullname" . }}-config
-                  key: DB_PORT
-            - name: DB_DATABASE
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "pro-motors.fullname" . }}-config
-                  key: DB_DATABASE
-            - name: DB_USERNAME
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "pro-motors.fullname" . }}-config
-                  key: DB_USERNAME
-            - name: DB_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.database.existingSecret }}
-                  key: password
-            - name: REDIS_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "pro-motors.fullname" . }}-config
-                  key: REDIS_HOST
-            - name: REDIS_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "pro-motors.fullname" . }}-config
-                  key: REDIS_PORT
-            - name: REDIS_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.redis.existingSecret }}
-                  key: redis-password
-            - name: MEILISEARCH_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: {{ include "pro-motors.fullname" . }}-config
-                  key: MEILISEARCH_HOST
-            - name: MEILISEARCH_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: {{ .Values.meilisearch.existingSecret }}
-                  key: master-key
           resources:
             {{- toYaml .Values.queue.resources | nindent 12 }}
           volumeMounts:
@@ -128,9 +61,14 @@ spec:
               mountPath: /var/www/html/storage
             - name: cache
               mountPath: /var/www/html/bootstrap/cache
+            - name: env
+              mountPath: /var/www/html/.env
+              subPath: .env
       volumes:
         - name: storage
-          persistentVolumeClaim:
-            claimName: {{ include "pro-motors.fullname" . }}-storage
+          emptyDir: {}
         - name: cache
           emptyDir: {}
+        - name: env
+          secret:
+            secretName: {{ include "pro-motors.fullname" . }}-env

@@ -10,13 +10,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class ScheduledTask extends Model
 {
     /** @use HasFactory<\Database\Factories\ScheduledTaskFactory> */
-    use HasFactory, Blamable;
+    use Blamable, HasFactory;
 
     protected $fillable = [
         'name',
         'job_class',
         'command',
         'cron_expression',
+        'frequency',
+        'frequency_time',
         'payload',
         'timezone',
         'is_active',
@@ -42,7 +44,8 @@ class ScheduledTask extends Model
         return $this->hasMany(ScheduledTaskRun::class);
     }
 
-    public function scopeActive($query) {
+    public function scopeActive($query)
+    {
         return $query->where('is_active', true);
     }
 }

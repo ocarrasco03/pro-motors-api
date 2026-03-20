@@ -6,9 +6,6 @@ use App\Domain\ValueObjects\Enums\BillingPeriodEnum;
 use App\Domain\ValueObjects\Enums\LicenseEnum;
 use App\Domain\ValueObjects\Enums\RolesEnum;
 use App\Domain\ValueObjects\Enums\StatusEnum;
-use App\Models\CompanyGroup;
-use App\Models\Tax;
-use App\Models\User;
 use App\Support\Traits\Blamable;
 use App\Support\Traits\HasSlug;
 use App\Support\Traits\Slug\SlugOptions;
@@ -21,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Company extends Model
 {
     /** @use HasFactory<\Database\Factories\CompanyFactory> */
-    use HasFactory, HasSlug, Blamable;
+    use Blamable, HasFactory, HasSlug;
 
     /**
      * The attributes that are mass assignable.
@@ -44,6 +41,8 @@ class Company extends Model
         'license',
         'status',
         'billing_period',
+        'cutoff_date',
+        'grace_period_days',
         'is_protected',
         'created_by',
         'updated_by',
@@ -72,12 +71,12 @@ class Company extends Model
         'billing_period' => BillingPeriodEnum::class,
         'license' => LicenseEnum::class,
         'is_protected' => 'boolean',
+        'cutoff_date' => 'date',
+        'grace_period_days' => 'integer',
     ];
 
     /**
      * Get the route key for the model.
-     *
-     * @return string
      */
     public function getRouteKeyName(): string
     {
@@ -101,8 +100,6 @@ class Company extends Model
 
     /**
      * Get the options for generating the slug.
-     *
-     * @return SlugOptions
      */
     public function getSlugOptions(): SlugOptions
     {
@@ -127,6 +124,11 @@ class Company extends Model
         return $this->belongsTo(Tax::class);
     }
 
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
+    }
+
     public function scopeAccessibleBy(Builder $query, User $user): Builder
     {
         if ($user->hasRole(RolesEnum::SUPER_ADMIN) && is_null($user->company_id)) {
@@ -149,7 +151,7 @@ class Company extends Model
             return true;
         }
 
-        if (!is_null($user->company_id) && $this->id === $user->company_id) {
+        if (! is_null($user->company_id) && $this->id === $user->company_id) {
             return true;
         }
 
@@ -180,5 +182,49 @@ class Company extends Model
     public function isActive(): bool
     {
         return $this->status === StatusEnum::ACTIVE;
+    }
+
+    public function getGracePeriodEndDate(): ?\Carbon\Carbon
+    {
+        if (! $this->cutoff_date) {
+            return null;
+        }
+
+        return \Carbon\Carbon::parse($this->cutoff_date)->addDays($this->grace_period_days ?? 5);
+    }
+
+    public function isWithinGracePeriod(): bool
+    {
+        $gracePeriodEnd = $this->getGracePeriodEndDate();
+
+        if (! $gracePeriodEnd) {
+            return false;
+        }
+
+        return now()->lessThanOrEqualTo($gracePeriodEnd);
+    }
+
+    public function hasCurrentMonthPayment(): bool
+    {
+        $startOfMonth = now()->startOfMonth();
+        $endOfMonth = now()->endOfMonth();
+
+        return $this->payments()
+            ->where('status', 'paid')
+            ->whereBetween('payment_date', [$startOfMonth, $endOfMonth])
+            ->exists();
+    }
+
+    public function shouldBeSuspended(): bool
+    {
+        if ($this->status !== StatusEnum::ACTIVE) {
+            return false;
+        }
+
+        if ($this->hasCurrentMonthPayment()) {
+            return false;
+        }
+
+        return ! $this->isWithinGracePeriod();
     }
 }
