@@ -27,7 +27,28 @@ final readonly class UpdateCompanyDTO
         public ?int $taxId = null,
         public ?string $tax = null,
         public ?LicenseEnum $license = null,
-    ) {}
+    ) {
+        $this->validate();
+    }
+
+    private function validate(): void
+    {
+        if ($this->name !== null && empty(trim($this->name))) {
+            throw new InvalidArgumentException('Company Name cannot be empty');
+        }
+
+        if ($this->email !== null && ! filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+            throw new InvalidArgumentException('Invalid email format');
+        }
+
+        if ($this->phone !== null && ! preg_match('/^[\d\s\-\(\)\+]+$/', $this->phone)) {
+            throw new InvalidArgumentException('Invalid phone number format');
+        }
+
+        if ($this->zipCode !== null && ! preg_match('/^[\d\-]+$/', $this->zipCode)) {
+            throw new InvalidArgumentException('Invalid ZIP code format');
+        }
+    }
 
     public static function fromArray(array $data): self
     {
@@ -54,7 +75,6 @@ final readonly class UpdateCompanyDTO
 
     public function toArray(): array
     {
-
         $values = [
             'name' => $this->name,
             'email' => $this->email,
@@ -75,11 +95,6 @@ final readonly class UpdateCompanyDTO
             'license' => $this->license,
         ];
 
-        return $this->filterNullValues($values);
-    }
-
-    private function filterNullValues(array $data): array
-    {
-        return array_filter($data, fn ($value) => !is_null($value));
+        return array_filter($values, fn ($value) => ! is_null($value));
     }
 }

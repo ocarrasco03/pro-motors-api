@@ -29,20 +29,37 @@ final readonly class CreateCompanyDTO
         public ?string $tax = null,
         public ?LicenseEnum $license = LicenseEnum::INDIVIDUAL,
     ) {
-        if (empty($this->name)) {
+        $this->validate();
+    }
+
+    private function validate(): void
+    {
+        if (empty(trim($this->name))) {
             throw new InvalidArgumentException('Company Name is required');
+        }
+
+        if (! filter_var($this->email, FILTER_VALIDATE_EMAIL)) {
+            throw new InvalidArgumentException('Invalid email format');
         }
 
         if (empty($this->taxId) && empty($this->tax)) {
             throw new InvalidArgumentException('Tax is required');
+        }
+
+        if ($this->phone && ! preg_match('/^[\d\s\-\(\)\+]+$/', $this->phone)) {
+            throw new InvalidArgumentException('Invalid phone number format');
+        }
+
+        if ($this->zipCode && ! preg_match('/^[\d\-]+$/', $this->zipCode)) {
+            throw new InvalidArgumentException('Invalid ZIP code format');
         }
     }
 
     public static function fromArray(array $data): self
     {
         return new self(
-            name: $data['name'],
-            email: $data['email'],
+            name: $data['name'] ?? '',
+            email: $data['email'] ?? '',
             ownerName: $data['ownerName'] ?? null,
             phone: $data['phone'] ?? null,
             address: $data['address'] ?? null,
