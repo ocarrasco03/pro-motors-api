@@ -8,6 +8,14 @@ use App\Application\Services\Auth\TokenService;
 use App\Application\Services\Auth\TokenServiceImpl;
 use App\Application\Services\Company\CompanyService;
 use App\Application\Services\Company\CompanyServiceImpl;
+use App\Application\Services\Product\BrandServiceImpl;
+use App\Application\Services\Product\BrandServiceInterface;
+use App\Application\Services\Product\PriceListServiceImpl;
+use App\Application\Services\Product\PriceListServiceInterface;
+use App\Application\Services\Product\ProductServiceImpl;
+use App\Application\Services\Product\ProductServiceInterface;
+use App\Application\Services\Product\SupplierServiceImpl;
+use App\Application\Services\Product\SupplierServiceInterface;
 use App\Application\Services\ScheduledTask\ScheduledTaskService;
 use App\Application\Services\ScheduledTask\ScheduledTaskServiceImpl;
 use App\Application\Services\Subscriptions\SubscriptionService;
@@ -29,7 +37,10 @@ class ProMotorsServiceProvider extends ServiceProvider
             AuthService::class => AuthServiceImpl::class,
 
             // Catalogs services
-            // ProductService::class => ProductServiceImpl::class,
+            BrandServiceInterface::class => BrandServiceImpl::class,
+            SupplierServiceInterface::class => SupplierServiceImpl::class,
+            ProductServiceInterface::class => ProductServiceImpl::class,
+            PriceListServiceInterface::class => PriceListServiceImpl::class,
 
             // Settings services
             CompanyService::class => CompanyServiceImpl::class,

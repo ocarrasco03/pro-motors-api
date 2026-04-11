@@ -3,10 +3,18 @@
 namespace App\Providers;
 
 use App\Domain\ValueObjects\Enums\RolesEnum;
+use App\Models\Brand;
 use App\Models\Company;
+use App\Models\PriceList;
+use App\Models\Product;
+use App\Models\Supplier;
 use App\Models\User;
+use App\Policies\BrandPolicy;
+use App\Policies\PriceListPolicy;
+use App\Policies\ProductPolicy;
 use App\Policies\Settings\CompanyPolicy;
 use App\Policies\Settings\UserPolicy;
+use App\Policies\SupplierPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -18,11 +26,12 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
+        Brand::class => BrandPolicy::class,
         Company::class => CompanyPolicy::class,
+        PriceList::class => PriceListPolicy::class,
+        Product::class => ProductPolicy::class,
+        Supplier::class => SupplierPolicy::class,
         User::class => UserPolicy::class,
-        // Future:
-        // PriceList::class => PriceListPolicy::class,
-        // Product::class   => ProductPolicy::class,
     ];
 
     /**
